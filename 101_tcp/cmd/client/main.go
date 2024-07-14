@@ -20,7 +20,12 @@ func Send(msg string, port int, translator encoding.Translator) {
 	}
 	defer conn.Close()
 
-	if _, err := conn.Write(translator.Encode(msg)); err != nil {
-		log.Fatal("Couldn't write encoded message: ", err)
+	// Artificial stream creation - it should send as one message
+	encoded := translator.Encode(msg)
+
+	for _, b := range encoded {
+		if _, err := conn.Write([]byte{b}); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
