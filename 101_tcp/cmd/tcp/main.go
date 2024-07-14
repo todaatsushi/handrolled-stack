@@ -8,6 +8,7 @@ import (
 
 	"github.com/todaatsushi/basic_tcp/cmd/client"
 	"github.com/todaatsushi/basic_tcp/cmd/server"
+	"github.com/todaatsushi/basic_tcp/internal/encoding"
 )
 
 func main() {
@@ -33,9 +34,9 @@ func main() {
 
 	switch strings.ToLower(parsedType) {
 	case "client":
-		client.Send(*msg, *port)
+		client.Send(*msg, *port, encoding.Basic{})
 	case "server":
-		server.Run(port)
+		server.Run(port, encoding.Basic{})
 	default:
 		log.Fatalf("Not a valid 'type' value (%s). Must be 'CLIENT' or 'SERVER.'", *runType)
 	}

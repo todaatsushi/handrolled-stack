@@ -3,15 +3,11 @@ package client
 import (
 	"log"
 	"net"
+
+	"github.com/todaatsushi/basic_tcp/internal/encoding"
 )
 
-func encode(msg string) []byte {
-	// Temp method - to be replaced
-	log.Println("WARNING: not implemented")
-	return []byte(msg)
-}
-
-func Send(msg string, port int) {
+func Send(msg string, port int, translator encoding.Translator) {
 	if len(msg) == 0 {
 		log.Fatal("Can't send empty message.")
 	}
@@ -24,10 +20,7 @@ func Send(msg string, port int) {
 	}
 	defer conn.Close()
 
-	// TODO: impl encode message
-	encoded := encode(msg)
-
-	if _, err := conn.Write(encoded); err != nil {
+	if _, err := conn.Write(translator.Encode(msg)); err != nil {
 		log.Fatal("Couldn't write encoded message: ", err)
 	}
 }
