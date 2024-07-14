@@ -6,6 +6,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/todaatsushi/basic_tcp/cmd/client"
 	"github.com/todaatsushi/basic_tcp/cmd/server"
 )
 
@@ -15,6 +16,9 @@ func main() {
 
 	// Server
 	port := flag.Int("p", 1337, "Connection port.")
+
+	// Client
+	msg := flag.String("m", "", "Message to server.")
 
 	flag.Parse()
 
@@ -29,7 +33,7 @@ func main() {
 
 	switch strings.ToLower(parsedType) {
 	case "client":
-		log.Fatal("TODO")
+		client.Send(*msg, *port)
 	case "server":
 		server.Run(port)
 	default:
