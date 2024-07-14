@@ -23,6 +23,8 @@ func Run(port *int, translator encoding.Translator) {
 		}
 
 		scanner := bufio.NewScanner(conn)
+		scanner.Scan()
+
 		decoded := translator.Decode(scanner.Bytes())
 		log.Println("Received message: ", decoded)
 	}
