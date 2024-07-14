@@ -1,5 +1,5 @@
 run:
-	go run ./cmd/main/main.go
+	go run ./cmd/tcp_server/main.go
 
 build:
 	go build -o ./bin/main ./cmd/tcp_server/main.go
