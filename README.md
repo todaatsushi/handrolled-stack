@@ -1,7 +1,7 @@
 # Handrolled stack
 
 ## TODO
-- [ ] basic TCP server
+- [ ] TCP client/server with custom protocol
 - [ ] web server
 - [ ] in memory cache
 - [ ] task queue
