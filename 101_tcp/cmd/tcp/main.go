@@ -5,10 +5,17 @@ import (
 	"fmt"
 	"log"
 	"strings"
+
+	"github.com/todaatsushi/basic_tcp/cmd/server"
 )
 
 func main() {
+	// Config
 	runType := flag.String("type", "", "'CLIENT' or 'SERVER'")
+
+	// Server
+	port := flag.Int("p", 1337, "Connection port.")
+
 	flag.Parse()
 
 	if len(*runType) == 0 {
@@ -18,13 +25,13 @@ func main() {
 
 	const basePrefix = "handrolled::TCP"
 	logPrefix := fmt.Sprintf("%s::%s", basePrefix, strings.ToLower(parsedType))
-	log.SetPrefix(logPrefix)
+	log.SetPrefix(logPrefix + "\t")
 
 	switch strings.ToLower(parsedType) {
 	case "client":
 		log.Fatal("TODO")
 	case "server":
-		log.Fatal("TODO")
+		server.Run(port)
 	default:
 		log.Fatalf("Not a valid 'type' value (%s). Must be 'CLIENT' or 'SERVER.'", *runType)
 	}
