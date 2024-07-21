@@ -53,3 +53,84 @@ func TestEncoding(t *testing.T) {
 		}
 	})
 }
+
+func TestDecoding(t *testing.T) {
+	expected := "Hello!"
+	translator := encoding.Basic{}
+
+	t.Run("Decode", func(t *testing.T) {
+		encoded := []byte{encoding.VERSION, 0, byte(len(expected))}
+		encoded = append(encoded, []byte(expected)...)
+
+		actual, err := translator.Decode(encoded)
+		if err != nil {
+			t.Fatalf("Error when decoding: %s", err.Error())
+		}
+
+		if actual != expected {
+			t.Fatalf("Expected '%s', got '%s'.", expected, actual)
+		}
+	})
+
+	t.Run("Not enough data", func(t *testing.T) {
+		encoded := []byte{42}
+
+		_, err := translator.Decode(encoded)
+		if err == nil {
+			t.Fatalf("Expected err, got nil.")
+		}
+
+		actual := err.Error()
+		expectedErr := "Not enough data."
+		if actual != expectedErr {
+			t.Fatalf("Expected '%s', got '%s'", actual, expectedErr)
+		}
+	})
+
+	t.Run("Version mismatch", func(t *testing.T) {
+		encoded := []byte{42, 0, 0}
+
+		_, err := translator.Decode(encoded)
+		if err == nil {
+			t.Fatalf("Expected err, got nil.")
+		}
+
+		expectedErr := "Version mismatch."
+		actual := err.Error()
+		if actual != expectedErr {
+			t.Fatalf("Expected '%s', got '%s'", actual, expectedErr)
+		}
+	})
+
+	t.Run("Data specified but no data", func(t *testing.T) {
+		encoded := []byte{encoding.VERSION, 0, byte(len(expected))}
+
+		_, err := translator.Decode(encoded)
+		if err == nil {
+			t.Fatalf("Expected err, got nil.")
+		}
+
+		expectedErr := "Data length specified but no data attached."
+		actual := err.Error()
+		if actual != expectedErr {
+			t.Fatalf("Expected '%s', got '%s'", actual, expectedErr)
+		}
+
+	})
+
+	t.Run("Len data mismatch with header", func(t *testing.T) {
+		encoded := []byte{encoding.VERSION, 0, byte(len(expected))}
+		encoded = append(encoded, byte(1))
+
+		_, err := translator.Decode(encoded)
+		if err == nil {
+			t.Fatalf("Expected err, got nil.")
+		}
+
+		expectedErr := "Data size doesn't match length specified."
+		actual := err.Error()
+		if actual != expectedErr {
+			t.Fatalf("Expected '%s', got '%s'", actual, expectedErr)
+		}
+	})
+}
