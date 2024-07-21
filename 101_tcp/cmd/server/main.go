@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bufio"
 	"log"
 	"net"
 
@@ -22,10 +21,28 @@ func Run(port *int, translator encoding.Translator) {
 			log.Fatal(err)
 		}
 
-		scanner := bufio.NewScanner(conn)
-		scanner.Scan()
+		go handle(conn, translator)
+	}
+}
 
-		decoded := translator.Decode(scanner.Bytes())
-		log.Println("Received message: ", decoded)
+func handle(conn net.Conn, translator encoding.Translator) {
+	defer conn.Close()
+	r := encoding.NewMessageReader(conn)
+
+	for {
+		if !r.HasData() {
+			break
+		}
+
+		data, err := r.Read()
+		if err != nil {
+			log.Fatal(err)
+		}
+		msg, err := translator.Decode(data)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Println("Received message: ", msg)
 	}
 }
