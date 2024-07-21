@@ -12,7 +12,7 @@ func Send(msg string, port int, translator encoding.Translator) {
 		log.Fatal("Can't send empty message.")
 	}
 
-	log.Printf("Encoding '%s' and sending to server (%d).", msg, len(msg))
+	log.Printf("Encoding '%s' and sending to server %d times.(length: %d).", msg, 10, len(msg))
 
 	conn, err := net.DialTCP("tcp", nil, &net.TCPAddr{Port: port})
 	if err != nil {
@@ -23,8 +23,9 @@ func Send(msg string, port int, translator encoding.Translator) {
 	// Artificial stream creation - it should send as one message
 	encoded := translator.Encode(msg)
 
-	for _, b := range encoded {
-		if _, err := conn.Write([]byte{b}); err != nil {
+	for range []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9} {
+		_, err := conn.Write(encoded)
+		if err != nil {
 			log.Fatal(err)
 		}
 	}
