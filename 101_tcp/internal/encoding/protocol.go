@@ -3,10 +3,13 @@ package encoding
 // Message format:
 // 8 bits
 
-// vv lendata
-// 00 000000 data
+// Message format:
+// 2 byte header
+// version | lendata (2B)
 
-const VERSION = 1
+const VERSION byte = 1
+const HEADER_SIZE = 3
+const MAX_PACKET_LEN = 10_000
 
 type Basic struct{}
 
