@@ -12,7 +12,7 @@ func Send(msg string, port int, translator encoding.Translator) {
 		log.Fatal("Can't send empty message.")
 	}
 
-	log.Printf("Encoding '%s' and sending to server.", msg)
+	log.Printf("Encoding '%s' and sending to server (%d).", msg, len(msg))
 
 	conn, err := net.DialTCP("tcp", nil, &net.TCPAddr{Port: port})
 	if err != nil {
