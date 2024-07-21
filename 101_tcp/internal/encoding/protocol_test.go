@@ -8,12 +8,11 @@ import (
 )
 
 func TestEncoding(t *testing.T) {
+	message := "Hello!"
+	translator := encoding.Basic{}
+	encoded := translator.Encode(message)
+
 	t.Run("Test headers", func(t *testing.T) {
-		message := "Hello!"
-
-		translator := encoding.Basic{}
-		encoded := translator.Encode(message)
-
 		actualVersion := encoded[0]
 		if actualVersion != encoding.VERSION {
 			t.Fatalf("Version flag mismatch: expected %d, got %d", encoding.VERSION, actualVersion)
@@ -35,11 +34,6 @@ func TestEncoding(t *testing.T) {
 	})
 
 	t.Run("Test data", func(t *testing.T) {
-		message := "Hello!"
-
-		translator := encoding.Basic{}
-		encoded := translator.Encode(message)
-
 		expectedLen := 1 + 2 + len(message)
 		if len(encoded) != expectedLen {
 			t.Fatalf("Expected total size of %d, got %d", expectedLen, len(encoded))
