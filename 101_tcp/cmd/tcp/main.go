@@ -13,7 +13,7 @@ import (
 
 func main() {
 	// Config
-	runType := flag.String("type", "", "'CLIENT' or 'SERVER'")
+	runType := flag.String("type", "", "'CLIENT', 'STDIN' or 'SERVER'")
 
 	// Server
 	port := flag.Int("p", 1337, "Connection port.")
@@ -24,7 +24,7 @@ func main() {
 	flag.Parse()
 
 	if len(*runType) == 0 {
-		log.Fatal("Please provide a type ('CLIENT' or 'SERVER').")
+		log.Fatal("Please provide a type ('CLIENT', 'STDIN' or 'SERVER').")
 	}
 	parsedType := strings.ToLower(*runType)
 
@@ -37,7 +37,9 @@ func main() {
 		client.Send(*msg, *port, encoding.Basic{})
 	case "server":
 		server.Run(port, encoding.Basic{})
+	case "stdin":
+		client.Stdin(*port, encoding.Basic{})
 	default:
-		log.Fatalf("Not a valid 'type' value (%s). Must be 'CLIENT' or 'SERVER.'", *runType)
+		log.Fatalf("Not a valid 'type' value (%s). Must be 'CLIENT', 'STDIN' or 'SERVER.'", *runType)
 	}
 }

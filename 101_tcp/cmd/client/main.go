@@ -1,8 +1,10 @@
 package client
 
 import (
+	"bufio"
 	"log"
 	"net"
+	"os"
 
 	"github.com/todaatsushi/basic_tcp/internal/encoding"
 )
@@ -27,6 +29,29 @@ func Send(msg string, port int, translator encoding.Translator) {
 		_, err := conn.Write(encoded)
 		if err != nil {
 			log.Fatal(err)
+		}
+	}
+}
+
+func Stdin(port int, translator encoding.Translator) {
+	conn, err := net.DialTCP("tcp", nil, &net.TCPAddr{Port: port})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+
+	for stdinScanner := bufio.NewScanner(os.Stdin); stdinScanner.Scan(); {
+		log.Printf("sent: %s\n", stdinScanner.Text())
+
+		msg := stdinScanner.Text()
+
+		encoded := translator.Encode(msg)
+		if _, err := conn.Write(encoded); err != nil {
+			log.Fatalf("error writing to %s: %v", conn.RemoteAddr(), err)
+		}
+
+		if stdinScanner.Err() != nil {
+			log.Fatalf("error reading from %s: %v", conn.RemoteAddr(), err)
 		}
 	}
 }
