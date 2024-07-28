@@ -1,6 +1,7 @@
 package server
 
 import (
+	"io"
 	"log"
 	"net"
 
@@ -20,22 +21,21 @@ func Run(port *int, translator encoding.Translator) {
 		if err != nil {
 			log.Fatal(err)
 		}
+		log.Println("Connected.")
 
 		go handle(conn, translator)
 	}
 }
 
 func handle(conn net.Conn, translator encoding.Translator) {
-	defer conn.Close()
 	r := encoding.NewMessageReader(conn)
 
 	for {
-		if !r.HasData() {
-			break
-		}
-
 		data, err := r.Read()
 		if err != nil {
+			if err == io.EOF {
+				return
+			}
 			log.Fatal(err)
 		}
 		msg, err := translator.Decode(data)
