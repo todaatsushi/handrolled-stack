@@ -13,43 +13,72 @@ const (
 	Log Command = 1
 )
 
+func parseCommand(value byte) (Command, error) {
+	asInt := int(value)
+	switch asInt {
+	case 1:
+		return Log, nil
+	default:
+		return -1, errors.New(fmt.Sprintf("Unexpected command: %d", asInt))
+	}
+}
+
 // Header: Version (1B) | Command (1B) | LenMessage (2B)
 const VERSION byte = 1
 
 type Message struct {
-	command Command
-	message string
+	Command Command
+	Message string
 }
 
 func NewMessage(command Command, message string) Message {
 	return Message{
-		command: command,
-		message: message,
+		Command: command,
+		Message: message,
 	}
 }
 
-func (m Message) UnmarshalBinary(data []byte) Message {
-	return Message{
-		command: 1,
-		message: "TODO",
+func UnmarshalBinary(data []byte) (Message, error) {
+	if len(data) <= 4 {
+		return Message{}, errors.New("Not enough data.")
 	}
+
+	version := data[0]
+	if version != VERSION {
+		return Message{}, errors.New("Version mismatch.")
+	}
+
+	commandByte := data[1]
+	lenMessageBytes := data[2:4]
+	lenMessage := int(binary.BigEndian.Uint16(lenMessageBytes))
+
+	if len(data) != 4+lenMessage {
+		return Message{}, errors.New("Mismatch in header info data length + received.")
+	}
+
+	command, err := parseCommand(commandByte)
+	if err != nil {
+		return Message{}, err
+	}
+	message := string(data[4 : 4+lenMessage])
+	return NewMessage(command, message), nil
 }
 
 func (m Message) MarshalBinary() ([]byte, error) {
 	data := []byte{}
-	message := []byte(m.message)
+	message := []byte(m.Message)
 
 	var command byte
-	switch m.command {
+	switch m.Command {
 	case Log:
 		command = 1
 	default:
-		msg := fmt.Sprintf("Unhandled command: %d\n", m.command)
+		msg := fmt.Sprintf("Unhandled command: %d\n", m.Command)
 		return data, errors.New(msg)
 	}
 
 	lenMessageData := make([]byte, 2)
-	lenMessage := uint16(len(m.message))
+	lenMessage := uint16(len(m.Message))
 	binary.BigEndian.PutUint16(lenMessageData, lenMessage)
 
 	data = append(data, VERSION)
