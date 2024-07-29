@@ -9,8 +9,10 @@ import (
 type Command int
 
 const (
-	_           = iota
-	Log Command = 1
+	_ Command = iota
+	Log
+	Enqueue
+	Consume
 )
 
 func parseCommand(value byte) (Command, error) {
@@ -18,6 +20,10 @@ func parseCommand(value byte) (Command, error) {
 	switch asInt {
 	case 1:
 		return Log, nil
+	case 2:
+		return Enqueue, nil
+	case 3:
+		return Consume, nil
 	default:
 		return -1, errors.New(fmt.Sprintf("Unexpected command: %d", asInt))
 	}
@@ -72,6 +78,14 @@ func (m Message) MarshalBinary() ([]byte, error) {
 	switch m.Command {
 	case Log:
 		command = 1
+	case Enqueue:
+		command = 2
+	case Consume:
+		command = 3
+
+		if len(m.Message) > 0 {
+			return data, errors.New("Consume message should have no data.")
+		}
 	default:
 		msg := fmt.Sprintf("Unhandled command: %d\n", m.Command)
 		return data, errors.New(msg)
