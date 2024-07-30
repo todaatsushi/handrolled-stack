@@ -10,6 +10,12 @@ import (
 	"github.com/todaatsushi/queue/internal/messages"
 )
 
+type writer struct{}
+
+func (w writer) Write(p []byte) (n int, err error) {
+	return 0, nil
+}
+
 func TestHandle(t *testing.T) {
 	t.Run("Log message", func(t *testing.T) {
 		var buf bytes.Buffer
@@ -18,7 +24,7 @@ func TestHandle(t *testing.T) {
 		server := broker.NewServer(1337)
 		message := messages.NewMessage(messages.Log, "Hello!")
 
-		server.ProcessMessage(message)
+		server.ProcessMessage(writer{}, message)
 
 		actual := buf.String()
 		expected := "LOG: Hello!"
@@ -32,7 +38,7 @@ func TestHandle(t *testing.T) {
 		server := broker.NewServer(1337)
 		message := messages.NewMessage(messages.Enqueue, "Hello!")
 
-		server.ProcessMessage(message)
+		server.ProcessMessage(writer{}, message)
 
 		if server.QueueLen() != 1 {
 			t.Errorf("Expected queue length of 1, got %v", server.QueueLen())

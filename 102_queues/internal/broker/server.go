@@ -3,6 +3,7 @@ package broker
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"net"
 
@@ -43,7 +44,7 @@ func (s *Server) Start() error {
 	}
 }
 
-func (s *Server) ProcessMessage(m messages.Message) {
+func (s *Server) ProcessMessage(w io.Writer, m messages.Message) {
 	log.Println("Starting")
 	switch m.Command {
 	case messages.Log:
@@ -70,5 +71,5 @@ func handle(conn net.Conn, server *Server) {
 		fmt.Fprint(conn, err.Error())
 		return
 	}
-	server.ProcessMessage(message)
+	server.ProcessMessage(conn, message)
 }
