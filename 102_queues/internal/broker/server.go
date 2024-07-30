@@ -3,7 +3,6 @@ package broker
 import (
 	"bufio"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -38,6 +37,7 @@ func (s *Server) Start() error {
 	if err != nil {
 		return err
 	}
+	log.Println("Starting listener.")
 	defer listener.Close()
 
 	for {
@@ -45,18 +45,19 @@ func (s *Server) Start() error {
 		if err != nil {
 			return err
 		}
+		log.Println("New connection made.")
 
 		go handle(conn, s)
 	}
 }
 
 func (s *Server) ProcessMessage(w io.Writer, m messages.Message) error {
-	log.Println("Starting")
 	switch m.Command {
 	case messages.Log:
 		log.Println("LOG:", m.Message)
 	case messages.Enqueue:
 		s.queue <- m
+		log.Println("Message added to queue.")
 	case messages.Consume:
 		if len(m.Message) != 0 {
 			return errors.New("Message should contain no data.")
@@ -78,16 +79,18 @@ func (s *Server) ProcessMessage(w io.Writer, m messages.Message) error {
 }
 
 func handle(conn net.Conn, server *Server) {
+	log.Println("Handling connection.")
+
 	reader := bufio.NewReader(conn)
 	data, err := reader.ReadBytes('\n')
 	if err != nil {
-		fmt.Fprint(conn, err.Error())
+		log.Println(err.Error())
 		return
 	}
 
 	message, err := messages.UnmarshalBinary(data)
 	if err != nil {
-		fmt.Fprint(conn, err.Error())
+		log.Println(err.Error())
 		return
 	}
 	server.ProcessMessage(conn, message)
