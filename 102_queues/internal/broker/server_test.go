@@ -93,4 +93,39 @@ func TestHandle(t *testing.T) {
 			t.Errorf("Expected queue length to be 0, got %d", server.QueueLen())
 		}
 	})
+
+	t.Run("Get queue length", func(t *testing.T) {
+		server := broker.NewServer(1337)
+		expected := messages.NewMessage(messages.Enqueue, "Hello!")
+
+		var buf bytes.Buffer
+		w := writer{
+			buffer: &buf,
+		}
+
+		err := server.ProcessMessage(w, expected)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if server.QueueLen() != 1 {
+			t.Errorf("Expected queue length to be 1, got %d", server.QueueLen())
+		}
+
+		message := messages.NewMessage(messages.QueueLen, "")
+		err = server.ProcessMessage(w, message)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		writtenMessage := w.buffer.Bytes()
+		parsedMessage, err := messages.UnmarshalBinary(writtenMessage)
+		if err != nil {
+			t.Fatal(err)
+		}
+		actual := parsedMessage.Message
+		if actual != "1" {
+			t.Errorf("Expected '1', got '%s'", actual)
+		}
+	})
 }

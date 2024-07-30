@@ -93,9 +93,6 @@ func (m Message) MarshalBinary() ([]byte, error) {
 		}
 	case QueueLen:
 		command = 4
-		if len(m.Message) > 0 {
-			return data, errors.New("Consume message should have no data.")
-		}
 	default:
 		msg := fmt.Sprintf("Unhandled command: %d\n", m.Command)
 		return data, errors.New(msg)

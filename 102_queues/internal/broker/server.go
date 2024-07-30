@@ -3,6 +3,7 @@ package broker
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -71,7 +72,23 @@ func (s *Server) ProcessMessage(w io.Writer, m messages.Message) error {
 		if err != nil {
 			return err
 		}
-		w.Write(data)
+
+		_, err = w.Write(data)
+		if err != nil {
+			return err
+		}
+	case messages.QueueLen:
+		numTasks := s.QueueLen()
+		message := messages.NewMessage(messages.QueueLen, fmt.Sprint(numTasks))
+		data, err := message.MarshalBinary()
+		if err != nil {
+			return err
+		}
+		_, err = w.Write(data)
+		if err != nil {
+			return err
+		}
+
 	default:
 		panic("Unhandled")
 	}

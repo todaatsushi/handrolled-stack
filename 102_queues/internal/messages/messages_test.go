@@ -83,21 +83,6 @@ func TestMarshal(t *testing.T) {
 			t.Errorf("Expected '%s', got '%s'", expected, actual)
 		}
 	})
-
-	t.Run("QueueLen message should have no data", func(t *testing.T) {
-		message := messages.NewMessage(messages.QueueLen, "data")
-		_, err := message.MarshalBinary()
-
-		if err == nil {
-			t.Fatal("Expected err, got nil.")
-		}
-
-		expected := "Consume message should have no data."
-		actual := err.Error()
-		if actual != expected {
-			t.Errorf("Expected '%s', got '%s'", expected, actual)
-		}
-	})
 }
 
 func TestUnmarshal(t *testing.T) {
