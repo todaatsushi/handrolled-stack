@@ -69,6 +69,10 @@ func TestHandle(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		if server.QueueLen() != 1 {
+			t.Errorf("Expected queue length to be 1, got %d", server.QueueLen())
+		}
+
 		message := messages.NewMessage(messages.Consume, "")
 		err = server.ProcessMessage(w, message)
 		if err != nil {
@@ -83,6 +87,10 @@ func TestHandle(t *testing.T) {
 		actual := parsedMessage.Message
 		if actual != data {
 			t.Errorf("Expected '%s', got '%s'", data, actual)
+		}
+
+		if server.QueueLen() != 0 {
+			t.Errorf("Expected queue length to be 0, got %d", server.QueueLen())
 		}
 	})
 }

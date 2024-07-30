@@ -57,7 +57,6 @@ func TestMarshal(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			t.Log(data)
 
 			actual := data[1]
 			if actual != tc.Expected {
