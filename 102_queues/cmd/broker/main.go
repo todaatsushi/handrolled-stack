@@ -7,8 +7,6 @@ import (
 )
 
 func Run(port int) {
-	log.Println("Starting broker")
-
 	server := broker.NewServer(port)
 	log.Fatal(server.Start())
 }
