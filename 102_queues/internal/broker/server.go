@@ -2,6 +2,7 @@ package broker
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -49,18 +50,31 @@ func (s *Server) Start() error {
 	}
 }
 
-func (s *Server) ProcessMessage(w io.Writer, m messages.Message) {
+func (s *Server) ProcessMessage(w io.Writer, m messages.Message) error {
 	log.Println("Starting")
 	switch m.Command {
 	case messages.Log:
 		log.Println("LOG:", m.Message)
 	case messages.Enqueue:
-		go func() {
-			s.queue <- m
-		}()
+		s.queue <- m
 	case messages.Consume:
-		panic("TODO")
+		if len(m.Message) != 0 {
+			return errors.New("Message should contain no data.")
+		}
+		if len(s.queue) == 0 {
+			return nil
+		}
+
+		toConsume := s.GetQueuedMessage()
+		data, err := toConsume.MarshalBinary()
+		if err != nil {
+			return err
+		}
+		w.Write(data)
+	default:
+		panic("Unhandled")
 	}
+	return nil
 }
 
 func handle(conn net.Conn, server *Server) {

@@ -24,7 +24,10 @@ func TestHandle(t *testing.T) {
 		server := broker.NewServer(1337)
 		message := messages.NewMessage(messages.Log, "Hello!")
 
-		server.ProcessMessage(writer{}, message)
+		err := server.ProcessMessage(writer{}, message)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		actual := buf.String()
 		expected := "LOG: Hello!"
@@ -38,7 +41,10 @@ func TestHandle(t *testing.T) {
 		server := broker.NewServer(1337)
 		message := messages.NewMessage(messages.Enqueue, "Hello!")
 
-		server.ProcessMessage(writer{}, message)
+		err := server.ProcessMessage(writer{}, message)
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		if server.QueueLen() != 1 {
 			t.Errorf("Expected queue length of 1, got %v", server.QueueLen())
