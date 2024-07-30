@@ -17,7 +17,8 @@ type Server struct {
 
 func NewServer(port int) *Server {
 	return &Server{
-		port: port,
+		port:  port,
+		queue: make(chan messages.Message),
 	}
 }
 
