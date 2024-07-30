@@ -26,6 +26,10 @@ func (s *Server) QueueLen() int {
 	return len(s.queue)
 }
 
+func (s *Server) GetQueuedMessage() messages.Message {
+	return <-s.queue
+}
+
 func (s *Server) Start() error {
 	log.Printf("Starting server on port %v", s.port)
 
