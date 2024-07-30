@@ -24,7 +24,7 @@ func TestMarshal(t *testing.T) {
 
 		expected = append(expected, lenMessageData...)
 		expected = append(expected, []byte(msg)...)
-		expected = append(expected, '\n')
+		expected = append(expected, messages.DELIM)
 
 		actual, err := message.MarshalBinary()
 		if err != nil {
@@ -88,9 +88,9 @@ func TestUnmarshal(t *testing.T) {
 			1, // Version
 			1, // Log
 			0,
-			1,          // Len of 1
-			97,         // Data - 'a'
-			byte('\n'), // Break
+			1,                    // Len of 1
+			97,                   // Data - 'a'
+			byte(messages.DELIM), // Break
 		}
 
 		expected := "a"
@@ -114,9 +114,9 @@ func TestUnmarshal(t *testing.T) {
 			10, // Invalid version
 			1,  // Log
 			0,
-			1,          // Len of 1
-			97,         // Data - 'a'
-			byte('\n'), // Break
+			1,                    // Len of 1
+			97,                   // Data - 'a'
+			byte(messages.DELIM), // Break
 		}
 
 		expected := errors.New("Version mismatch.")
@@ -136,9 +136,9 @@ func TestUnmarshal(t *testing.T) {
 			1,  // Version
 			10, // Invalid command
 			0,
-			1,          // Len of 1
-			97,         // Data - 'a'
-			byte('\n'), // Break
+			1,                    // Len of 1
+			97,                   // Data - 'a'
+			byte(messages.DELIM), // Break
 		}
 
 		expected := errors.New("Unexpected command: 10")
@@ -163,7 +163,7 @@ func TestUnmarshal(t *testing.T) {
 			97, // Len more than 1 data - 'aaa'
 			97,
 			97,
-			byte('\n'), // Break
+			byte(messages.DELIM), // Break
 		}
 
 		expected := errors.New("Mismatch in header info data length + received.")
@@ -182,7 +182,7 @@ func TestUnmarshal(t *testing.T) {
 	t.Run("Message too short", func(t *testing.T) {
 		data := []byte{
 			1,
-			byte('\n'), // Break
+			byte(messages.DELIM), // Break
 		}
 
 		expected := errors.New("Not enough data.")

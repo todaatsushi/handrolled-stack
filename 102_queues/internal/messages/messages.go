@@ -15,6 +15,8 @@ const (
 	Consume
 )
 
+const DELIM = '\n'
+
 func parseCommand(value byte) (Command, error) {
 	asInt := int(value)
 	switch asInt {
@@ -100,6 +102,6 @@ func (m Message) MarshalBinary() ([]byte, error) {
 	data = append(data, command)
 	data = append(data, lenMessageData...)
 	data = append(data, message...)
-	data = append(data, '\n')
+	data = append(data, DELIM)
 	return data, nil
 }

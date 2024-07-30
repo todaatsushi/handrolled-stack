@@ -82,7 +82,7 @@ func handle(conn net.Conn, server *Server) {
 	log.Println("Handling connection.")
 
 	reader := bufio.NewReader(conn)
-	data, err := reader.ReadBytes('\n')
+	data, err := reader.ReadBytes(messages.DELIM)
 	if err != nil {
 		log.Println(err.Error())
 		return
