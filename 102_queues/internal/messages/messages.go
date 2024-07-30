@@ -58,7 +58,8 @@ func UnmarshalBinary(data []byte) (Message, error) {
 	lenMessageBytes := data[2:4]
 	lenMessage := int(binary.BigEndian.Uint16(lenMessageBytes))
 
-	if len(data) != 4+lenMessage {
+	// Header + data + break char
+	if len(data) != 4+lenMessage+1 {
 		return Message{}, errors.New("Mismatch in header info data length + received.")
 	}
 
@@ -99,5 +100,6 @@ func (m Message) MarshalBinary() ([]byte, error) {
 	data = append(data, command)
 	data = append(data, lenMessageData...)
 	data = append(data, message...)
+	data = append(data, '\n')
 	return data, nil
 }
