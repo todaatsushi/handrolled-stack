@@ -10,9 +10,12 @@ import (
 	"github.com/todaatsushi/queue/internal/messages"
 )
 
-type writer struct{}
+type writer struct {
+	buffer *bytes.Buffer
+}
 
 func (w writer) Write(p []byte) (n int, err error) {
+	w.buffer.Write(p)
 	return 0, nil
 }
 
@@ -52,6 +55,34 @@ func TestHandle(t *testing.T) {
 	})
 
 	t.Run("Consume message", func(t *testing.T) {
-		t.Skip("TODO")
+		server := broker.NewServer(1337)
+		data := "Hello!"
+		expected := messages.NewMessage(messages.Enqueue, data)
+
+		var buf bytes.Buffer
+		w := writer{
+			buffer: &buf,
+		}
+
+		err := server.ProcessMessage(w, expected)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		message := messages.NewMessage(messages.Consume, "")
+		err = server.ProcessMessage(w, message)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		writtenMessage := w.buffer.Bytes()
+		parsedMessage, err := messages.UnmarshalBinary(writtenMessage)
+		if err != nil {
+			t.Fatal(err)
+		}
+		actual := parsedMessage.Message
+		if actual != data {
+			t.Errorf("Expected '%s', got '%s'", data, actual)
+		}
 	})
 }
