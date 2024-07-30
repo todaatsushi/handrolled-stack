@@ -14,3 +14,7 @@ func Send(port int, messages string) {
 func Health(port int) {
 	producer.CheckServer(port)
 }
+
+func QueueLen(port int) {
+	producer.GetQueueLen(port)
+}

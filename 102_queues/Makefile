@@ -6,3 +6,6 @@ broker:
 
 health:
 	./bin/queues -type=HEALTH
+
+qlen:
+	./bin/queues -type=QUEUELEN

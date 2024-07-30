@@ -12,7 +12,7 @@ import (
 func main() {
 	port := flag.Int("port", 1337, "Port")
 	messages := flag.String("m", "", "Comma separated messages to send as tasks.")
-	runType := flag.String("type", "", "'BROKER' | 'PRODUCER' | 'HEALTH'")
+	runType := flag.String("type", "", "'BROKER' | 'PRODUCER' | 'HEALTH' | 'QUEUELEN'")
 	flag.Parse()
 
 	_type := strings.ToUpper(*runType)
@@ -26,6 +26,9 @@ func main() {
 	case "HEALTH":
 		log.Println("Health check.")
 		producer.Health(*port)
+	case "QUEUELEN":
+		log.Println("Getting length of queue.")
+		producer.QueueLen(*port)
 	default:
 		log.Printf("Unhandled run type '%s'", *runType)
 	}
