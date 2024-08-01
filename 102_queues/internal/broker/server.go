@@ -64,7 +64,15 @@ func (s *Server) ProcessMessage(w io.Writer, m messages.Message) error {
 			return errors.New("Message should contain no data.")
 		}
 		if len(s.queue) == 0 {
-			return nil
+			// TODO: create a new command with to signify task.
+			message := messages.NewMessage(messages.Consume, "")
+			data, err := message.MarshalBinary()
+			if err != nil {
+				return err
+			}
+
+			_, err = w.Write(data)
+			return err
 		}
 
 		toConsume := s.GetQueuedMessage()

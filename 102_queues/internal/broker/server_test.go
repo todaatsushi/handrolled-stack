@@ -94,6 +94,31 @@ func TestHandle(t *testing.T) {
 		}
 	})
 
+	t.Run("Consume message with no messages on queue", func(t *testing.T) {
+		server := broker.NewServer(1337)
+
+		var buf bytes.Buffer
+		w := writer{
+			buffer: &buf,
+		}
+		message := messages.NewMessage(messages.Consume, "")
+		t.Log(server, w, message)
+		err := server.ProcessMessage(w, message)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		writtenMessage := w.buffer.Bytes()
+		parsedMessage, err := messages.UnmarshalBinary(writtenMessage)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if parsedMessage.Command != messages.Consume {
+			t.Errorf("Expected %d, got %d", messages.Consume, parsedMessage.Command)
+		}
+	})
+
 	t.Run("Get queue length", func(t *testing.T) {
 		server := broker.NewServer(1337)
 		expected := messages.NewMessage(messages.Enqueue, "Hello!")
