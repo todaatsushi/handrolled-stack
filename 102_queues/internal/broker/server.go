@@ -88,7 +88,6 @@ func (s *Server) ProcessMessage(w io.Writer, m messages.Message) error {
 		if err != nil {
 			return err
 		}
-
 	default:
 		panic("Unhandled")
 	}
