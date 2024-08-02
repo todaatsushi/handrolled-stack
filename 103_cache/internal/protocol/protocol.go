@@ -7,4 +7,7 @@ type Command byte
 
 const (
 	_ Command = iota
+	Get
+	Set
+	Update
 )
