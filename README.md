@@ -4,4 +4,4 @@
 - [x] TCP client/server with custom protocol
 - [ ] web server
 - [ ] in memory cache
-- [ ] task queue
+- [x] task queue
