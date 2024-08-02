@@ -1,9 +1,13 @@
 package protocol
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 // Version (1B) | Command (1B) | TTL (1B) | Length (2B) | Data (x)
 const VERSION byte = 1
+const HEADER_SIZE = 5
 
 type Command byte
 
@@ -18,4 +22,12 @@ type Message struct {
 	Cmd     Command
 	Data    []byte
 	Expires time.Time
+}
+
+func UnmarshalBinary(data []byte) (Message, error) {
+	if len(data) < HEADER_SIZE {
+		return Message{}, errors.New("Not enough data.")
+	}
+
+	panic("TODO")
 }
