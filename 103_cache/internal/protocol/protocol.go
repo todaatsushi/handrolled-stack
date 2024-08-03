@@ -39,11 +39,15 @@ func parseCommand(cmd byte) (Command, error) {
 	}
 }
 
-func validateData(cmd Command, data []byte) error {
+func validateData(cmd Command, data []byte, ttl int) error {
 	switch cmd {
 	case Get:
 		if len(data) > 0 {
 			return errors.New("Data passed to GET.")
+		}
+
+		if ttl > 0 {
+			return errors.New("TTL shouldn't be passed to GET.")
 		}
 	}
 	return nil
@@ -81,7 +85,11 @@ func UnmarshalBinary(data []byte, clock Clock) (Message, error) {
 		return Message{}, err
 	}
 
-	err = validateData(cmd, toCache)
+	TTLBytes := data[3:5]
+	TTL := int(binary.BigEndian.Uint16(TTLBytes))
+	expires := time.Now().Add(time.Second * time.Duration(TTL))
+
+	err = validateData(cmd, toCache, TTL)
 	if err != nil {
 		return Message{}, err
 	}

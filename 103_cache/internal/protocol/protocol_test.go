@@ -40,8 +40,6 @@ func TestUnmarshalValidation(t *testing.T) {
 
 	t.Run("Version mismatch", func(t *testing.T) {
 		ttl := make([]byte, 2)
-		secs := uint16(69)
-		binary.BigEndian.PutUint16(ttl, secs)
 
 		size := make([]byte, 2)
 
@@ -69,8 +67,6 @@ func TestUnmarshalValidation(t *testing.T) {
 
 	t.Run("Data length mismatch", func(t *testing.T) {
 		ttl := make([]byte, 2)
-		secs := uint16(69)
-		binary.BigEndian.PutUint16(ttl, secs)
 
 		size := make([]byte, 2)
 		binary.BigEndian.PutUint16(size, 2)
@@ -98,8 +94,6 @@ func TestUnmarshalValidation(t *testing.T) {
 
 	t.Run("Invalid command", func(t *testing.T) {
 		ttl := make([]byte, 2)
-		secs := uint16(69)
-		binary.BigEndian.PutUint16(ttl, secs)
 
 		size := make([]byte, 2)
 		binary.BigEndian.PutUint16(size, 0)
@@ -128,8 +122,6 @@ func TestUnmarshalValidation(t *testing.T) {
 func TestUnmarshalGet(t *testing.T) {
 	t.Run("Data passed to GET", func(t *testing.T) {
 		ttl := make([]byte, 2)
-		secs := uint16(69)
-		binary.BigEndian.PutUint16(ttl, secs)
 
 		size := make([]byte, 2)
 		binary.BigEndian.PutUint16(size, 1)
@@ -148,6 +140,34 @@ func TestUnmarshalGet(t *testing.T) {
 		}
 
 		expected := errors.New("Data passed to GET.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
+
+	t.Run("TTL passed to GET", func(t *testing.T) {
+		ttl := make([]byte, 2)
+		secs := uint16(69)
+		binary.BigEndian.PutUint16(ttl, secs)
+
+		size := make([]byte, 2)
+		binary.BigEndian.PutUint16(size, 0)
+
+		data := []byte{
+			protocol.VERSION,
+			byte(protocol.Get),
+		}
+		data = append(data, ttl...)
+		data = append(data, size...)
+
+		_, err := protocol.UnmarshalBinary(data, clock{})
+		if err == nil {
+			t.Error("Expected err, got nil.")
+		}
+
+		expected := errors.New("TTL shouldn't be passed to GET.").Error()
 		actual := err.Error()
 
 		if actual != expected {
