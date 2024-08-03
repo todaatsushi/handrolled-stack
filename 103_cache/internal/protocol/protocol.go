@@ -37,9 +37,14 @@ func UnmarshalBinary(data []byte) (Message, error) {
 
 	lenDataBytes := data[4:6]
 	lenData := int(binary.BigEndian.Uint16(lenDataBytes))
-	toCache := data[7:]
-	if lenData != len(toCache) {
-		return Message{}, errors.New("Length of data doesn't match header.")
+	var toCache []byte
+	if lenData > 0 {
+		toCache = data[7:]
+		if lenData != len(toCache) {
+			return Message{}, errors.New("Length of data doesn't match header.")
+		}
+	} else {
+		toCache = []byte{}
 	}
 
 	panic("TODO")
