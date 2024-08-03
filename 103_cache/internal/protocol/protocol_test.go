@@ -238,4 +238,31 @@ func TestUnmarshalSet(t *testing.T) {
 			t.Errorf("Expected '%s', got '%s'", expected, actual)
 		}
 	})
+
+	t.Run("TTL not passed to SET", func(t *testing.T) {
+		ttl := make([]byte, 2)
+
+		size := make([]byte, 2)
+		binary.BigEndian.PutUint16(size, 1)
+
+		data := []byte{
+			protocol.VERSION,
+			byte(protocol.Set),
+		}
+		data = append(data, ttl...)
+		data = append(data, size...)
+		data = append(data, byte(69))
+
+		_, err := protocol.UnmarshalBinary(data, clock{})
+		if err == nil {
+			t.Fatal("Expected err, got nil.")
+		}
+
+		expected := errors.New("TTL not passed to SET.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
 }

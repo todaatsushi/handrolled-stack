@@ -53,6 +53,10 @@ func validateData(cmd Command, data []byte, ttl int) error {
 		if len(data) == 0 {
 			return errors.New("Data not passed to SET.")
 		}
+
+		if ttl == 0 {
+			return errors.New("TTL not passed to SET.")
+		}
 	}
 	return nil
 }
