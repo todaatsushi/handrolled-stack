@@ -209,3 +209,33 @@ func TestUnmarshalGet(t *testing.T) {
 		}
 	})
 }
+
+func TestUnmarshalSet(t *testing.T) {
+	t.Run("Data not passed to SET", func(t *testing.T) {
+		ttl := make([]byte, 2)
+		secs := uint16(69)
+		binary.BigEndian.PutUint16(ttl, secs)
+
+		size := make([]byte, 2)
+		binary.BigEndian.PutUint16(size, 0)
+
+		data := []byte{
+			protocol.VERSION,
+			byte(protocol.Set),
+		}
+		data = append(data, ttl...)
+		data = append(data, size...)
+
+		_, err := protocol.UnmarshalBinary(data, clock{})
+		if err == nil {
+			t.Fatal("Expected err, got nil.")
+		}
+
+		expected := errors.New("Data not passed to SET.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
+}
