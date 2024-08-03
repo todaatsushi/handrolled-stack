@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-// Version (1B) | Command (1B) | TTL (1B) | Length (2B) | Data (x)
+// Version (1B) | Command (1B) | TTL (2B) | Length (2B) | Data (x)
 const VERSION byte = 1
-const HEADER_SIZE = 5
+const HEADER_SIZE = 6
 
 type Command byte
 
