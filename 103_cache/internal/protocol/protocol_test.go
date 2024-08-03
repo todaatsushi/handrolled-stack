@@ -120,6 +120,40 @@ func TestUnmarshalValidation(t *testing.T) {
 }
 
 func TestUnmarshalGet(t *testing.T) {
+	t.Run("Unmarshal GET", func(t *testing.T) {
+		ttl := make([]byte, 2)
+
+		size := make([]byte, 2)
+		binary.BigEndian.PutUint16(size, 0)
+
+		data := []byte{
+			protocol.VERSION,
+			byte(protocol.Get),
+		}
+		data = append(data, ttl...)
+		data = append(data, size...)
+
+		actual, err := protocol.UnmarshalBinary(data, clock{})
+		if err != nil {
+			t.Errorf("Expected nil, got '%s'", err.Error())
+		}
+
+		expected := protocol.Message{
+			protocol.Get, []byte{}, clock{}.Now(),
+		}
+
+		if actual.Cmd != expected.Cmd {
+			t.Errorf("Commands don't match: expected '%d', got '%d'", expected.Cmd, actual.Cmd)
+		}
+		if actual.Expires.Equal(expected.Expires) {
+			t.Errorf("Expriry date doesn't match: expected '%s', got '%s'", expected.Expires, actual.Expires)
+		}
+
+		if len(actual.Data) != 0 {
+			t.Errorf("No cached data expected for GET: Expected 0, got %d", len(actual.Data))
+		}
+	})
+
 	t.Run("Data passed to GET", func(t *testing.T) {
 		ttl := make([]byte, 2)
 

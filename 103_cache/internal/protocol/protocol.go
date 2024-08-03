@@ -93,5 +93,8 @@ func UnmarshalBinary(data []byte, clock Clock) (Message, error) {
 	if err != nil {
 		return Message{}, err
 	}
-	panic("TODO")
+
+	return Message{
+		cmd, toCache, expires,
+	}, nil
 }
