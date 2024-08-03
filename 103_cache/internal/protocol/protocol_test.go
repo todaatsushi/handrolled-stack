@@ -77,7 +77,7 @@ func TestUnmarshalValidation(t *testing.T) {
 		}
 		data = append(data, ttl...)
 		data = append(data, size...)
-		data = append(data, []byte{69}...)
+		data = append(data, byte(69))
 
 		_, err := protocol.UnmarshalBinary(data, clock{})
 		if err == nil {
@@ -166,7 +166,7 @@ func TestUnmarshalGet(t *testing.T) {
 		}
 		data = append(data, ttl...)
 		data = append(data, size...)
-		data = append(data, []byte{69}...)
+		data = append(data, byte(69))
 
 		_, err := protocol.UnmarshalBinary(data, clock{})
 		if err == nil {
