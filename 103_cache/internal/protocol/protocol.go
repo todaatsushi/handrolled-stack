@@ -39,7 +39,12 @@ func parseCommand(cmd byte) (Command, error) {
 	}
 }
 
-func UnmarshalBinary(data []byte) (Message, error) {
+type Clock interface {
+	Now() time.Time
+	Add(d time.Duration) time.Time
+}
+
+func UnmarshalBinary(data []byte, clock Clock) (Message, error) {
 	if len(data) < HEADER_SIZE {
 		return Message{}, errors.New("Not enough data.")
 	}

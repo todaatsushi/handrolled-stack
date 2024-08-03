@@ -4,16 +4,29 @@ import (
 	"encoding/binary"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/todaatsushi/handrolled-cache/internal/protocol"
 )
 
-func TestUnmarshal(t *testing.T) {
+type clock struct{}
+
+func (c clock) Now() time.Time {
+	t, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z07:00")
+	return t
+}
+
+func (c clock) Add(d time.Duration) time.Time {
+	now := c.Now()
+	return now.Add(d)
+}
+
+func TestUnmarshalValidation(t *testing.T) {
 	t.Run("Not enough data", func(t *testing.T) {
 		data := []byte{}
 
 		expected := errors.New("Not enough data.").Error()
-		_, err := protocol.UnmarshalBinary(data)
+		_, err := protocol.UnmarshalBinary(data, clock{})
 
 		if err == nil {
 			t.Error("Expected err, got nil.")
@@ -41,7 +54,7 @@ func TestUnmarshal(t *testing.T) {
 		data = append(data, ttl...)
 		data = append(data, size...)
 
-		_, err := protocol.UnmarshalBinary(data)
+		_, err := protocol.UnmarshalBinary(data, clock{})
 		if err == nil {
 			t.Error("Expected err, got nil.")
 		}
@@ -70,7 +83,7 @@ func TestUnmarshal(t *testing.T) {
 		data = append(data, size...)
 		data = append(data, []byte{69}...)
 
-		_, err := protocol.UnmarshalBinary(data)
+		_, err := protocol.UnmarshalBinary(data, clock{})
 		if err == nil {
 			t.Error("Expected err, got nil.")
 		}
@@ -98,7 +111,7 @@ func TestUnmarshal(t *testing.T) {
 		data = append(data, ttl...)
 		data = append(data, size...)
 
-		_, err := protocol.UnmarshalBinary(data)
+		_, err := protocol.UnmarshalBinary(data, clock{})
 		if err == nil {
 			t.Error("Expected err, got nil.")
 		}
