@@ -29,5 +29,10 @@ func UnmarshalBinary(data []byte) (Message, error) {
 		return Message{}, errors.New("Not enough data.")
 	}
 
+	version := data[0]
+	if version != VERSION {
+		return Message{}, errors.New("Version mismatch.")
+	}
+
 	panic("TODO")
 }

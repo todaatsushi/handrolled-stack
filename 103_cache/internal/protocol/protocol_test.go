@@ -1,6 +1,7 @@
 package protocol_test
 
 import (
+	"encoding/binary"
 	"errors"
 	"testing"
 
@@ -21,6 +22,35 @@ func TestUnmarshal(t *testing.T) {
 		actual := err.Error()
 		if actual != expected {
 			t.Errorf("Expected '%s', got '%s'.", expected, actual)
+		}
+	})
+
+	t.Run("Version mismatch", func(t *testing.T) {
+		ttl := make([]byte, 2)
+		secs := uint16(69)
+		binary.BigEndian.PutUint16(ttl, secs)
+
+		size := make([]byte, 2)
+
+		fakeVersion := byte(0)
+
+		data := []byte{
+			fakeVersion,
+			byte(protocol.Get),
+		}
+		data = append(data, ttl...)
+		data = append(data, size...)
+
+		_, err := protocol.UnmarshalBinary(data)
+		if err == nil {
+			t.Error("Expected err, got nil.")
+		}
+
+		expected := errors.New("Version mismatch.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
 		}
 	})
 }
