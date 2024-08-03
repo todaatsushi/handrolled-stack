@@ -124,3 +124,34 @@ func TestUnmarshalValidation(t *testing.T) {
 		}
 	})
 }
+
+func TestUnmarshalGet(t *testing.T) {
+	t.Run("Data passed to GET", func(t *testing.T) {
+		ttl := make([]byte, 2)
+		secs := uint16(69)
+		binary.BigEndian.PutUint16(ttl, secs)
+
+		size := make([]byte, 2)
+		binary.BigEndian.PutUint16(size, 1)
+
+		data := []byte{
+			protocol.VERSION,
+			byte(protocol.Get),
+		}
+		data = append(data, ttl...)
+		data = append(data, size...)
+		data = append(data, []byte{69}...)
+
+		_, err := protocol.UnmarshalBinary(data, clock{})
+		if err == nil {
+			t.Error("Expected err, got nil.")
+		}
+
+		expected := errors.New("Data passed to GET.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
+}

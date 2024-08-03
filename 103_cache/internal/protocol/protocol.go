@@ -39,6 +39,16 @@ func parseCommand(cmd byte) (Command, error) {
 	}
 }
 
+func validateData(cmd Command, data []byte) error {
+	switch cmd {
+	case Get:
+		if len(data) > 0 {
+			return errors.New("Data passed to GET.")
+		}
+	}
+	return nil
+}
+
 type Clock interface {
 	Now() time.Time
 	Add(d time.Duration) time.Time
@@ -66,10 +76,14 @@ func UnmarshalBinary(data []byte, clock Clock) (Message, error) {
 		toCache = []byte{}
 	}
 
-	_, err := parseCommand(data[1])
+	cmd, err := parseCommand(data[1])
 	if err != nil {
 		return Message{}, err
 	}
 
+	err = validateData(cmd, toCache)
+	if err != nil {
+		return Message{}, err
+	}
 	panic("TODO")
 }
