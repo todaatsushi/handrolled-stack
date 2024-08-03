@@ -211,6 +211,43 @@ func TestUnmarshalGet(t *testing.T) {
 }
 
 func TestUnmarshalSet(t *testing.T) {
+	t.Run("Unmarshal SET", func(t *testing.T) {
+		ttl := make([]byte, 2)
+		secs := uint16(69)
+		binary.BigEndian.PutUint16(ttl, secs)
+
+		size := make([]byte, 2)
+		binary.BigEndian.PutUint16(size, 1)
+
+		data := []byte{
+			protocol.VERSION,
+			byte(protocol.Set),
+		}
+		data = append(data, ttl...)
+		data = append(data, size...)
+		data = append(data, byte(69))
+
+		actual, err := protocol.UnmarshalBinary(data, clock{})
+		if err != nil {
+			t.Fatalf("Expected nil, got '%s'", err.Error())
+		}
+
+		expected := protocol.Message{
+			protocol.Set, []byte{69}, clock{}.Now(),
+		}
+
+		if actual.Cmd != expected.Cmd {
+			t.Errorf("Commands don't match: expected '%d', got '%d'", expected.Cmd, actual.Cmd)
+		}
+		if actual.Expires.Equal(expected.Expires) {
+			t.Errorf("Expriry date doesn't match: expected '%s', got '%s'", expected.Expires, actual.Expires)
+		}
+
+		if len(actual.Data) != 1 {
+			t.Errorf("Cached data expected for SET: Expected 1, got %d", len(actual.Data))
+		}
+	})
+
 	t.Run("Data not passed to SET", func(t *testing.T) {
 		ttl := make([]byte, 2)
 		secs := uint16(69)
