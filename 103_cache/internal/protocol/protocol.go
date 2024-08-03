@@ -3,6 +3,7 @@ package protocol
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -25,6 +26,19 @@ type Message struct {
 	Expires time.Time
 }
 
+func parseCommand(cmd byte) (Command, error) {
+	switch cmd {
+	case 1:
+		return Get, nil
+	case 2:
+		return Set, nil
+	case 3:
+		return Update, nil
+	default:
+		return Get, errors.New(fmt.Sprintf("Invalid command: %d", int(cmd)))
+	}
+}
+
 func UnmarshalBinary(data []byte) (Message, error) {
 	if len(data) < HEADER_SIZE {
 		return Message{}, errors.New("Not enough data.")
@@ -45,6 +59,11 @@ func UnmarshalBinary(data []byte) (Message, error) {
 		}
 	} else {
 		toCache = []byte{}
+	}
+
+	_, err := parseCommand(data[1])
+	if err != nil {
+		return Message{}, err
 	}
 
 	panic("TODO")

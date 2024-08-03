@@ -82,4 +82,32 @@ func TestUnmarshal(t *testing.T) {
 			t.Errorf("Expected '%s', got '%s'", expected, actual)
 		}
 	})
+
+	t.Run("Invalid command", func(t *testing.T) {
+		ttl := make([]byte, 2)
+		secs := uint16(69)
+		binary.BigEndian.PutUint16(ttl, secs)
+
+		size := make([]byte, 2)
+		binary.BigEndian.PutUint16(size, 0)
+
+		data := []byte{
+			protocol.VERSION,
+			byte(0),
+		}
+		data = append(data, ttl...)
+		data = append(data, size...)
+
+		_, err := protocol.UnmarshalBinary(data)
+		if err == nil {
+			t.Error("Expected err, got nil.")
+		}
+
+		expected := errors.New("Invalid command: 0").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
 }
