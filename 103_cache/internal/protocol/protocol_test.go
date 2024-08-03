@@ -29,7 +29,7 @@ func TestUnmarshalValidation(t *testing.T) {
 		_, err := protocol.UnmarshalBinary(data, clock{})
 
 		if err == nil {
-			t.Error("Expected err, got nil.")
+			t.Fatal("Expected err, got nil.")
 		}
 
 		actual := err.Error()
@@ -54,7 +54,7 @@ func TestUnmarshalValidation(t *testing.T) {
 
 		_, err := protocol.UnmarshalBinary(data, clock{})
 		if err == nil {
-			t.Error("Expected err, got nil.")
+			t.Fatal("Expected err, got nil.")
 		}
 
 		expected := errors.New("Version mismatch.").Error()
@@ -81,7 +81,7 @@ func TestUnmarshalValidation(t *testing.T) {
 
 		_, err := protocol.UnmarshalBinary(data, clock{})
 		if err == nil {
-			t.Error("Expected err, got nil.")
+			t.Fatal("Expected err, got nil.")
 		}
 
 		expected := errors.New("Length of data doesn't match header.").Error()
@@ -107,7 +107,7 @@ func TestUnmarshalValidation(t *testing.T) {
 
 		_, err := protocol.UnmarshalBinary(data, clock{})
 		if err == nil {
-			t.Error("Expected err, got nil.")
+			t.Fatal("Expected err, got nil.")
 		}
 
 		expected := errors.New("Invalid command: 0").Error()
@@ -135,7 +135,7 @@ func TestUnmarshalGet(t *testing.T) {
 
 		actual, err := protocol.UnmarshalBinary(data, clock{})
 		if err != nil {
-			t.Errorf("Expected nil, got '%s'", err.Error())
+			t.Fatalf("Expected nil, got '%s'", err.Error())
 		}
 
 		expected := protocol.Message{
@@ -170,7 +170,7 @@ func TestUnmarshalGet(t *testing.T) {
 
 		_, err := protocol.UnmarshalBinary(data, clock{})
 		if err == nil {
-			t.Error("Expected err, got nil.")
+			t.Fatal("Expected err, got nil.")
 		}
 
 		expected := errors.New("Data passed to GET.").Error()
@@ -198,7 +198,7 @@ func TestUnmarshalGet(t *testing.T) {
 
 		_, err := protocol.UnmarshalBinary(data, clock{})
 		if err == nil {
-			t.Error("Expected err, got nil.")
+			t.Fatal("Expected err, got nil.")
 		}
 
 		expected := errors.New("TTL shouldn't be passed to GET.").Error()
