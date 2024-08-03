@@ -1,6 +1,7 @@
 package protocol
 
 import (
+	"encoding/binary"
 	"errors"
 	"time"
 )
@@ -32,6 +33,13 @@ func UnmarshalBinary(data []byte) (Message, error) {
 	version := data[0]
 	if version != VERSION {
 		return Message{}, errors.New("Version mismatch.")
+	}
+
+	lenDataBytes := data[4:6]
+	lenData := int(binary.BigEndian.Uint16(lenDataBytes))
+	toCache := data[7:]
+	if lenData != len(toCache) {
+		return Message{}, errors.New("Length of data doesn't match header.")
 	}
 
 	panic("TODO")
