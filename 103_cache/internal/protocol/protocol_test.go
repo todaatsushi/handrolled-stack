@@ -303,3 +303,97 @@ func TestUnmarshalSet(t *testing.T) {
 		}
 	})
 }
+
+func TestUpdate(t *testing.T) {
+	t.Run("Unmarshal UPDATE", func(t *testing.T) {
+		ttl := make([]byte, 2)
+		secs := uint16(69)
+		binary.BigEndian.PutUint16(ttl, secs)
+
+		size := make([]byte, 2)
+		binary.BigEndian.PutUint16(size, 1)
+
+		data := []byte{
+			protocol.VERSION,
+			byte(protocol.Update),
+		}
+		data = append(data, ttl...)
+		data = append(data, size...)
+		data = append(data, byte(69))
+
+		actual, err := protocol.UnmarshalBinary(data, clock{})
+		if err != nil {
+			t.Fatalf("Expected nil, got '%s'", err.Error())
+		}
+
+		expected := protocol.Message{
+			protocol.Update, []byte{69}, clock{}.Now(),
+		}
+
+		if actual.Cmd != expected.Cmd {
+			t.Errorf("Commands don't match: expected '%d', got '%d'", expected.Cmd, actual.Cmd)
+		}
+		if actual.Expires.Equal(expected.Expires) {
+			t.Errorf("Expriry date doesn't match: expected '%s', got '%s'", expected.Expires, actual.Expires)
+		}
+
+		if len(actual.Data) != 1 {
+			t.Errorf("Cached data expected for UPDATE: Expected 1, got %d", len(actual.Data))
+		}
+	})
+
+	t.Run("Data not passed to UPDATE", func(t *testing.T) {
+		ttl := make([]byte, 2)
+		secs := uint16(69)
+		binary.BigEndian.PutUint16(ttl, secs)
+
+		size := make([]byte, 2)
+		binary.BigEndian.PutUint16(size, 0)
+
+		data := []byte{
+			protocol.VERSION,
+			byte(protocol.Update),
+		}
+		data = append(data, ttl...)
+		data = append(data, size...)
+
+		_, err := protocol.UnmarshalBinary(data, clock{})
+		if err == nil {
+			t.Fatal("Expected err, got nil.")
+		}
+
+		expected := errors.New("Data not passed to UPDATE.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
+
+	t.Run("TTL not passed to UPDATE", func(t *testing.T) {
+		ttl := make([]byte, 2)
+
+		size := make([]byte, 2)
+		binary.BigEndian.PutUint16(size, 1)
+
+		data := []byte{
+			protocol.VERSION,
+			byte(protocol.Update),
+		}
+		data = append(data, ttl...)
+		data = append(data, size...)
+		data = append(data, byte(69))
+
+		_, err := protocol.UnmarshalBinary(data, clock{})
+		if err == nil {
+			t.Fatal("Expected err, got nil.")
+		}
+
+		expected := errors.New("TTL not passed to UPDATE.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
+}
