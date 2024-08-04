@@ -10,10 +10,10 @@ type Store struct {
 	mu       *sync.Mutex
 	store    map[string]*list.Element
 	ll       *list.List
-	maxItems int
+	maxItems uint64 // 0 == unlimited
 }
 
-func NewStore(maxItems int) *Store {
+func NewStore(maxItems uint64) *Store {
 	return &Store{
 		mu:       &sync.Mutex{},
 		store:    make(map[string]*list.Element),
