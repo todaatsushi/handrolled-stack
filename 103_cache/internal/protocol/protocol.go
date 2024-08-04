@@ -7,9 +7,9 @@ import (
 	"time"
 )
 
-// Version (1B) | Command (1B) | TTL (2B) | Length (2B) | Data (x)
+// Version (1B) | Command (1B) | TTL (2B) | KeyLen (2B) | Length (2B) | Key (x) | Data (x)
 const VERSION byte = 1
-const HEADER_SIZE = 6
+const HEADER_SIZE = 8
 
 type Command byte
 
@@ -22,6 +22,7 @@ const (
 
 type Message struct {
 	Cmd     Command
+	Key     string
 	Data    []byte
 	Expires time.Time
 }
@@ -84,11 +85,18 @@ func UnmarshalBinary(data []byte, clock Clock) (Message, error) {
 		return Message{}, errors.New("Version mismatch.")
 	}
 
-	lenDataBytes := data[4:6]
+	keyLenBytes := data[4:6]
+	lenKey := int(binary.BigEndian.Uint16(keyLenBytes))
+
+	lenDataBytes := data[6:8]
 	lenData := int(binary.BigEndian.Uint16(lenDataBytes))
+
+	keyBytes := data[8 : 8+lenKey]
+	key := string(keyBytes)
+
 	var toCache []byte
 	if lenData > 0 {
-		toCache = data[6:]
+		toCache = data[8+lenKey:]
 		if lenData != len(toCache) {
 			return Message{}, errors.New("Length of data doesn't match header.")
 		}
@@ -111,6 +119,6 @@ func UnmarshalBinary(data []byte, clock Clock) (Message, error) {
 	}
 
 	return Message{
-		cmd, toCache, expires,
+		cmd, key, toCache, expires,
 	}, nil
 }

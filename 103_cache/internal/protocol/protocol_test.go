@@ -45,12 +45,18 @@ func TestUnmarshalValidation(t *testing.T) {
 
 		fakeVersion := byte(0)
 
+		key := []byte("key")
+		keyLen := make([]byte, 2)
+		binary.BigEndian.PutUint16(keyLen, uint16(len(key)))
+
 		data := []byte{
 			fakeVersion,
 			byte(protocol.Get),
 		}
 		data = append(data, ttl...)
+		data = append(data, keyLen...)
 		data = append(data, size...)
+		data = append(data, key...)
 
 		_, err := protocol.UnmarshalBinary(data, clock{})
 		if err == nil {
@@ -71,12 +77,18 @@ func TestUnmarshalValidation(t *testing.T) {
 		size := make([]byte, 2)
 		binary.BigEndian.PutUint16(size, 2)
 
+		key := []byte("key")
+		keyLen := make([]byte, 2)
+		binary.BigEndian.PutUint16(keyLen, uint16(len(key)))
+
 		data := []byte{
 			protocol.VERSION,
 			byte(protocol.Get),
 		}
 		data = append(data, ttl...)
+		data = append(data, keyLen...)
 		data = append(data, size...)
+		data = append(data, key...)
 		data = append(data, byte(69))
 
 		_, err := protocol.UnmarshalBinary(data, clock{})
@@ -98,12 +110,18 @@ func TestUnmarshalValidation(t *testing.T) {
 		size := make([]byte, 2)
 		binary.BigEndian.PutUint16(size, 0)
 
+		key := []byte("key")
+		keyLen := make([]byte, 2)
+		binary.BigEndian.PutUint16(keyLen, uint16(len(key)))
+
 		data := []byte{
 			protocol.VERSION,
 			byte(0),
 		}
 		data = append(data, ttl...)
+		data = append(data, keyLen...)
 		data = append(data, size...)
+		data = append(data, key...)
 
 		_, err := protocol.UnmarshalBinary(data, clock{})
 		if err == nil {
@@ -126,12 +144,18 @@ func TestUnmarshalGet(t *testing.T) {
 		size := make([]byte, 2)
 		binary.BigEndian.PutUint16(size, 0)
 
+		key := []byte("key")
+		keyLen := make([]byte, 2)
+		binary.BigEndian.PutUint16(keyLen, uint16(len(key)))
+
 		data := []byte{
 			protocol.VERSION,
 			byte(protocol.Get),
 		}
 		data = append(data, ttl...)
+		data = append(data, keyLen...)
 		data = append(data, size...)
+		data = append(data, key...)
 
 		actual, err := protocol.UnmarshalBinary(data, clock{})
 		if err != nil {
@@ -139,7 +163,7 @@ func TestUnmarshalGet(t *testing.T) {
 		}
 
 		expected := protocol.Message{
-			protocol.Get, []byte{}, clock{}.Now(),
+			protocol.Get, "key", []byte{}, clock{}.Now(),
 		}
 
 		if actual.Cmd != expected.Cmd {
@@ -160,12 +184,18 @@ func TestUnmarshalGet(t *testing.T) {
 		size := make([]byte, 2)
 		binary.BigEndian.PutUint16(size, 1)
 
+		key := []byte("key")
+		keyLen := make([]byte, 2)
+		binary.BigEndian.PutUint16(keyLen, uint16(len(key)))
+
 		data := []byte{
 			protocol.VERSION,
 			byte(protocol.Get),
 		}
 		data = append(data, ttl...)
+		data = append(data, keyLen...)
 		data = append(data, size...)
+		data = append(data, key...)
 		data = append(data, byte(69))
 
 		_, err := protocol.UnmarshalBinary(data, clock{})
@@ -189,12 +219,18 @@ func TestUnmarshalGet(t *testing.T) {
 		size := make([]byte, 2)
 		binary.BigEndian.PutUint16(size, 0)
 
+		key := []byte("key")
+		keyLen := make([]byte, 2)
+		binary.BigEndian.PutUint16(keyLen, uint16(len(key)))
+
 		data := []byte{
 			protocol.VERSION,
 			byte(protocol.Get),
 		}
 		data = append(data, ttl...)
+		data = append(data, keyLen...)
 		data = append(data, size...)
+		data = append(data, key...)
 
 		_, err := protocol.UnmarshalBinary(data, clock{})
 		if err == nil {
@@ -219,12 +255,18 @@ func TestUnmarshalSet(t *testing.T) {
 		size := make([]byte, 2)
 		binary.BigEndian.PutUint16(size, 1)
 
+		key := []byte("key")
+		keyLen := make([]byte, 2)
+		binary.BigEndian.PutUint16(keyLen, uint16(len(key)))
+
 		data := []byte{
 			protocol.VERSION,
 			byte(protocol.Set),
 		}
 		data = append(data, ttl...)
+		data = append(data, keyLen...)
 		data = append(data, size...)
+		data = append(data, key...)
 		data = append(data, byte(69))
 
 		actual, err := protocol.UnmarshalBinary(data, clock{})
@@ -233,7 +275,7 @@ func TestUnmarshalSet(t *testing.T) {
 		}
 
 		expected := protocol.Message{
-			protocol.Set, []byte{69}, clock{}.Now(),
+			protocol.Set, "key", []byte{69}, clock{}.Now(),
 		}
 
 		if actual.Cmd != expected.Cmd {
@@ -253,6 +295,10 @@ func TestUnmarshalSet(t *testing.T) {
 		secs := uint16(69)
 		binary.BigEndian.PutUint16(ttl, secs)
 
+		key := []byte("key")
+		keyLen := make([]byte, 2)
+		binary.BigEndian.PutUint16(keyLen, uint16(len(key)))
+
 		size := make([]byte, 2)
 		binary.BigEndian.PutUint16(size, 0)
 
@@ -261,7 +307,9 @@ func TestUnmarshalSet(t *testing.T) {
 			byte(protocol.Set),
 		}
 		data = append(data, ttl...)
+		data = append(data, keyLen...)
 		data = append(data, size...)
+		data = append(data, key...)
 
 		_, err := protocol.UnmarshalBinary(data, clock{})
 		if err == nil {
@@ -282,12 +330,18 @@ func TestUnmarshalSet(t *testing.T) {
 		size := make([]byte, 2)
 		binary.BigEndian.PutUint16(size, 1)
 
+		key := []byte("key")
+		keyLen := make([]byte, 2)
+		binary.BigEndian.PutUint16(keyLen, uint16(len(key)))
+
 		data := []byte{
 			protocol.VERSION,
 			byte(protocol.Set),
 		}
 		data = append(data, ttl...)
+		data = append(data, keyLen...)
 		data = append(data, size...)
+		data = append(data, key...)
 		data = append(data, byte(69))
 
 		_, err := protocol.UnmarshalBinary(data, clock{})
@@ -313,12 +367,18 @@ func TestUpdate(t *testing.T) {
 		size := make([]byte, 2)
 		binary.BigEndian.PutUint16(size, 1)
 
+		key := []byte("key")
+		keyLen := make([]byte, 2)
+		binary.BigEndian.PutUint16(keyLen, uint16(len(key)))
+
 		data := []byte{
 			protocol.VERSION,
 			byte(protocol.Update),
 		}
 		data = append(data, ttl...)
+		data = append(data, keyLen...)
 		data = append(data, size...)
+		data = append(data, key...)
 		data = append(data, byte(69))
 
 		actual, err := protocol.UnmarshalBinary(data, clock{})
@@ -327,7 +387,7 @@ func TestUpdate(t *testing.T) {
 		}
 
 		expected := protocol.Message{
-			protocol.Update, []byte{69}, clock{}.Now(),
+			protocol.Update, "key", []byte{69}, clock{}.Now(),
 		}
 
 		if actual.Cmd != expected.Cmd {
@@ -347,6 +407,10 @@ func TestUpdate(t *testing.T) {
 		secs := uint16(69)
 		binary.BigEndian.PutUint16(ttl, secs)
 
+		key := []byte("key")
+		keyLen := make([]byte, 2)
+		binary.BigEndian.PutUint16(keyLen, uint16(len(key)))
+
 		size := make([]byte, 2)
 		binary.BigEndian.PutUint16(size, 0)
 
@@ -355,7 +419,9 @@ func TestUpdate(t *testing.T) {
 			byte(protocol.Update),
 		}
 		data = append(data, ttl...)
+		data = append(data, keyLen...)
 		data = append(data, size...)
+		data = append(data, key...)
 
 		_, err := protocol.UnmarshalBinary(data, clock{})
 		if err == nil {
@@ -376,12 +442,18 @@ func TestUpdate(t *testing.T) {
 		size := make([]byte, 2)
 		binary.BigEndian.PutUint16(size, 1)
 
+		key := []byte("key")
+		keyLen := make([]byte, 2)
+		binary.BigEndian.PutUint16(keyLen, uint16(len(key)))
+
 		data := []byte{
 			protocol.VERSION,
 			byte(protocol.Update),
 		}
 		data = append(data, ttl...)
+		data = append(data, keyLen...)
 		data = append(data, size...)
+		data = append(data, key...)
 		data = append(data, byte(69))
 
 		_, err := protocol.UnmarshalBinary(data, clock{})
