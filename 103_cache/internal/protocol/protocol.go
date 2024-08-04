@@ -17,7 +17,6 @@ const (
 	_ Command = iota
 	Get
 	Set
-	Update
 )
 
 type Message struct {
@@ -61,8 +60,6 @@ func parseCommand(cmd byte) (Command, error) {
 		return Get, nil
 	case 2:
 		return Set, nil
-	case 3:
-		return Update, nil
 	default:
 		return Get, errors.New(fmt.Sprintf("Invalid command: %d", int(cmd)))
 	}
@@ -77,14 +74,6 @@ func validateData(cmd Command, data []byte, ttl int) error {
 
 		if ttl > 0 {
 			return errors.New("TTL shouldn't be passed to GET.")
-		}
-	case Update:
-		if len(data) == 0 {
-			return errors.New("Data not passed to UPDATE.")
-		}
-
-		if ttl == 0 {
-			return errors.New("TTL not passed to UPDATE.")
 		}
 	case Set:
 		if len(data) == 0 {
