@@ -27,6 +27,34 @@ type Message struct {
 	Expires time.Time
 }
 
+func (m Message) MarshalBinary(clock Clock) ([]byte, error) {
+	diff := m.Expires.Sub(clock.Now())
+	secs := diff.Seconds()
+	if secs < 0 {
+		return []byte{}, errors.New("Negative TTL.")
+	}
+
+	ttl := make([]byte, 2)
+	binary.BigEndian.PutUint16(ttl, uint16(secs))
+
+	keyBytes := []byte(m.Key)
+	keyLen := make([]byte, 2)
+	binary.BigEndian.PutUint16(keyLen, uint16(len(keyBytes)))
+
+	dataLen := make([]byte, 2)
+	binary.BigEndian.PutUint16(dataLen, uint16(len(m.Data)))
+
+	data := []byte{}
+	data = append(data, VERSION)
+	data = append(data, byte(m.Cmd))
+	data = append(data, ttl...)
+	data = append(data, keyLen...)
+	data = append(data, dataLen...)
+	data = append(data, keyBytes...)
+	data = append(data, m.Data...)
+	return data, nil
+}
+
 func parseCommand(cmd byte) (Command, error) {
 	switch cmd {
 	case 1:

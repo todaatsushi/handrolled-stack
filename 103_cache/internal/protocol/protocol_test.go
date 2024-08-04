@@ -469,3 +469,58 @@ func TestUpdate(t *testing.T) {
 		}
 	})
 }
+
+func TestMarshal(t *testing.T) {
+	t.Run("Marshals", func(t *testing.T) {
+		message := protocol.Message{
+			protocol.Set, "key", []byte{69}, clock{}.Now().Add(time.Second * 10),
+		}
+
+		keyBytes := []byte("key")
+
+		expected := []byte{}
+		expected = append(expected, protocol.VERSION)
+		expected = append(expected, byte(protocol.Set))
+		expected = append(expected, []byte{0, 10}...)
+		expected = append(expected, []byte{0, byte(len(keyBytes))}...)
+		expected = append(expected, []byte{0, 1}...)
+		expected = append(expected, keyBytes...)
+		expected = append(expected, byte(69))
+
+		actual, err := message.MarshalBinary(clock{})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if len(actual) != len(expected) {
+			t.Fatalf("Expected len %d, got %d", len(expected), len(actual))
+		}
+
+		for i, a := range actual {
+			e := expected[i]
+
+			if a != e {
+				t.Errorf("Expected %d, got %d at position %d", e, a, i)
+			}
+		}
+	})
+
+	t.Run("Negative TTL", func(t *testing.T) {
+		message := protocol.Message{
+			protocol.Set, "key", []byte{69}, clock{}.Now().Add(time.Second * 10 * -1),
+		}
+
+		_, err := message.MarshalBinary(clock{})
+		if err == nil {
+			t.Fatal("Expected err, got nil.")
+		}
+
+		expected := errors.New("Negative TTL.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
+
+}
