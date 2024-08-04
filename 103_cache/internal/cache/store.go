@@ -3,6 +3,7 @@ package cache
 import (
 	"container/list"
 	"sync"
+	"time"
 )
 
 type Store struct {
@@ -19,4 +20,10 @@ func NewStore(maxItems int) *Store {
 		ll:       &list.List{},
 		maxItems: maxItems,
 	}
+}
+
+type Node struct {
+	key    string
+	value  any
+	expire time.Time
 }
