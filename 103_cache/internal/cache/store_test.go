@@ -2,6 +2,7 @@ package cache_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -134,6 +135,42 @@ func TestGet(t *testing.T) {
 		}
 
 		expected := errors.New("Expired.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
+}
+
+func TestCache(t *testing.T) {
+	t.Run("Test eviction", func(t *testing.T) {
+		var err error
+
+		// Create store with N values
+		s := cache.NewStore(2, c{})
+
+		// Store N values with specific TTL / expires X
+		for i := range 2 {
+			_, err = s.Set(fmt.Sprint(i), i, 3600)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		// Store next value
+		_, err = s.Set("2", 2, 3600)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Refetch first value - expires should not be X as it was evicted.
+		_, err = s.Get("0")
+		if err == nil {
+			t.Fatal("Expected err, got nil")
+		}
+
+		expected := errors.New("Value doesn't exist.").Error()
 		actual := err.Error()
 
 		if actual != expected {
