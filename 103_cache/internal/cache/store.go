@@ -50,6 +50,26 @@ func (s *Store) Set(key string, value any, ttl int) (expires time.Time, err erro
 	return node.Expire, nil
 }
 
+func (s *Store) Get(key string) (value any, err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	item, ok := s.store[key]
+	if !ok {
+		return nil, errors.New("Value doesn't exist.")
+	}
+
+	node := item.Value.(*Node)
+	now := s.c.Now()
+
+	if node.Expire.Unix() < now.Unix() {
+		return nil, errors.New("Expired.")
+	}
+
+	s.ll.MoveToFront(item)
+	return node.Value, nil
+}
+
 func NewStore(maxItems uint64, c Clock) *Store {
 	return &Store{
 		mu:       &sync.Mutex{},
