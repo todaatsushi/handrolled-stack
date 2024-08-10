@@ -25,7 +25,7 @@ func NewStore(maxItems uint64) *Store {
 }
 
 type Node struct {
-	key    string
-	value  any
-	expire time.Time
+	Key    string
+	Value  any
+	Expire time.Time
 }
