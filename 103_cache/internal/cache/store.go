@@ -11,14 +11,16 @@ type Store struct {
 	store    map[string]*list.Element
 	ll       *list.List
 	maxItems uint64 // 0 == unlimited
+	NumItems uint64
 }
 
 func NewStore(maxItems uint64) *Store {
 	return &Store{
 		mu:       &sync.Mutex{},
 		store:    make(map[string]*list.Element),
-		ll:       &list.List{},
+		ll:       list.New(),
 		maxItems: maxItems,
+		NumItems: 0,
 	}
 }
 
