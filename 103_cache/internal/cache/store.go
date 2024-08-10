@@ -48,6 +48,8 @@ func (s *Store) Set(key string, value any, ttl int) (expires time.Time, err erro
 
 	if s.NumItems > s.maxItems && s.maxItems != 0 {
 		last := s.ll.Back()
+
+		delete(s.store, last.Value.(*Node).Key)
 		s.ll.Remove(last)
 		s.NumItems--
 	}
