@@ -11,7 +11,7 @@ import (
 type c struct{}
 
 func (clock c) Now() time.Time {
-	t, err := time.Parse(time.RFC3339, "2069-04-20T14:00:00Z")
+	t, err := time.Parse(time.RFC3339, "2069-04-20T15:00:00Z")
 	if err != nil {
 		panic(err)
 	}
@@ -19,7 +19,7 @@ func (clock c) Now() time.Time {
 }
 
 func (clock c) CalcExpires(ttl int) time.Time {
-	t, err := time.Parse(time.RFC3339, "2069-04-20T14:59:50Z")
+	t, err := time.Parse(time.RFC3339, "2069-04-20T14:50:00Z")
 	if err != nil {
 		panic(err)
 	}
