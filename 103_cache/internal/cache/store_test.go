@@ -60,6 +60,21 @@ func TestSet(t *testing.T) {
 			t.Fatal("Expected new expires to be after old expires.")
 		}
 	})
+
+	t.Run("Negative ttl", func(t *testing.T) {
+		s := cache.NewStore(1, c{})
+		_, err := s.Set("key", 420, -1)
+		if err == nil {
+			t.Fatal("Expecting err, got nil")
+		}
+
+		expected := errors.New("TTL can't be negative.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
 }
 
 func TestGet(t *testing.T) {

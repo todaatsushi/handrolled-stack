@@ -22,6 +22,10 @@ type Store struct {
 }
 
 func (s *Store) Set(key string, value any, ttl int) (expires time.Time, err error) {
+	if ttl < 0 {
+		return time.Now(), errors.New("TTL can't be negative.")
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
