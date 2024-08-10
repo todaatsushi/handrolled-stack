@@ -7,19 +7,25 @@ import (
 	"time"
 )
 
+type Clock interface {
+	Now() time.Time
+	CalcExpires(ttl int) time.Time
+}
+
 type Store struct {
 	mu       *sync.Mutex
 	store    map[string]*list.Element
 	ll       *list.List
 	maxItems uint64 // 0 == unlimited
 	NumItems uint64
+	c        Clock
 }
 
 func (s *Store) Set(key string, value any, ttl int) (expires time.Time, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	e := time.Now().Add(time.Second * time.Duration(ttl))
+	e := s.c.CalcExpires(ttl)
 	item, ok := s.store[key]
 	if ok {
 		s.ll.MoveToFront(item)
@@ -44,13 +50,14 @@ func (s *Store) Set(key string, value any, ttl int) (expires time.Time, err erro
 	return node.Expire, nil
 }
 
-func NewStore(maxItems uint64) *Store {
+func NewStore(maxItems uint64, c Clock) *Store {
 	return &Store{
 		mu:       &sync.Mutex{},
 		store:    make(map[string]*list.Element),
 		ll:       list.New(),
 		maxItems: maxItems,
 		NumItems: 0,
+		c:        c,
 	}
 }
 
