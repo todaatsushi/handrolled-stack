@@ -29,6 +29,15 @@ func (s *Store) Set(key string, value string, expires time.Time) (exp time.Time,
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	// Do this before so the overwriting key value doesn't get deleted
+	if s.NumItems+1 > s.maxItems && s.maxItems != 0 {
+		last := s.ll.Back()
+
+		delete(s.store, last.Value.(*Node).Key)
+		s.ll.Remove(last)
+		s.NumItems--
+	}
+
 	node := &Node{
 		key, []byte(value), expires,
 	}
@@ -36,14 +45,6 @@ func (s *Store) Set(key string, value string, expires time.Time) (exp time.Time,
 	s.NumItems++
 
 	s.store[key] = s.ll.Front()
-
-	if s.NumItems > s.maxItems && s.maxItems != 0 {
-		last := s.ll.Back()
-
-		delete(s.store, last.Value.(*Node).Key)
-		s.ll.Remove(last)
-		s.NumItems--
-	}
 	return node.Expire, nil
 }
 
