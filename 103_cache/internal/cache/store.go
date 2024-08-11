@@ -18,7 +18,7 @@ type Store struct {
 	ll       *list.List
 	maxItems uint64 // 0 == unlimited
 	NumItems uint64
-	c        Clock
+	C        Clock
 }
 
 func (s *Store) Set(key string, value any, ttl int) (expires time.Time, err error) {
@@ -29,7 +29,7 @@ func (s *Store) Set(key string, value any, ttl int) (expires time.Time, err erro
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	e := s.c.CalcExpires(ttl)
+	e := s.C.CalcExpires(ttl)
 	item, ok := s.store[key]
 	if ok {
 		s.ll.MoveToFront(item)
@@ -66,7 +66,7 @@ func (s *Store) Get(key string) (value any, err error) {
 	}
 
 	node := item.Value.(*Node)
-	now := s.c.Now()
+	now := s.C.Now()
 
 	if node.Expire.Unix() < now.Unix() {
 		return nil, errors.New("Expired.")
@@ -83,7 +83,7 @@ func NewStore(maxItems uint64, c Clock) *Store {
 		ll:       list.New(),
 		maxItems: maxItems,
 		NumItems: 0,
-		c:        c,
+		C:        c,
 	}
 }
 
