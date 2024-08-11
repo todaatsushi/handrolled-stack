@@ -442,5 +442,76 @@ func TestMarshal(t *testing.T) {
 			t.Errorf("Expected '%s', got '%s'", expected, actual)
 		}
 	})
+}
 
+func TestNewMessage(t *testing.T) {
+	t.Run("No key", func(t *testing.T) {
+		_, err := protocol.NewMessage(protocol.Get, "", []byte{}, 1)
+		if err == nil {
+			t.Fatal("Expected err, got nil.")
+		}
+
+		expected := errors.New("No key provided.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
+
+	t.Run("No data for SET", func(t *testing.T) {
+		_, err := protocol.NewMessage(protocol.Set, "key", []byte{}, 1)
+		if err == nil {
+			t.Fatal("Expected err, got nil.")
+		}
+
+		expected := errors.New("No data provided for SET.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
+
+	t.Run("Data provided for GET", func(t *testing.T) {
+		_, err := protocol.NewMessage(protocol.Get, "key", []byte{1}, 1)
+		if err == nil {
+			t.Fatal("Expected err, got nil.")
+		}
+
+		expected := errors.New("Data provided for GET.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
+
+	t.Run("TTL less than 1 for SET", func(t *testing.T) {
+		_, err := protocol.NewMessage(protocol.Set, "key", []byte{1}, 0)
+		if err == nil {
+			t.Fatal("Expected err, got nil.")
+		}
+
+		expected := errors.New("TTL must be greater than 0.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
+
+	t.Run("TTL provided for GET", func(t *testing.T) {
+		_, err := protocol.NewMessage(protocol.Get, "key", []byte{}, 1)
+		if err == nil {
+			t.Fatal("Expected err, got nil.")
+		}
+
+		expected := errors.New("TTL must be -1 for GET.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
 }

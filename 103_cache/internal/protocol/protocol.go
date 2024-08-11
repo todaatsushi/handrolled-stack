@@ -26,6 +26,31 @@ type Message struct {
 	Expires time.Time
 }
 
+func NewMessage(cmd Command, key string, data []byte, ttl int) (Message, error) {
+	if key == "" {
+		return Message{}, errors.New("No key provided.")
+	}
+
+	if cmd == Set && len(data) == 0 {
+		return Message{}, errors.New("No data provided for SET.")
+	}
+
+	if cmd == Get && len(data) > 0 {
+		return Message{}, errors.New("Data provided for GET.")
+	}
+
+	if cmd == Get && ttl != -1 {
+		return Message{}, errors.New("TTL must be -1 for GET.")
+	}
+
+	if cmd == Set && ttl < 1 {
+		return Message{}, errors.New("TTL must be greater than 0.")
+	}
+
+	expires := time.Now().Add(time.Second * time.Duration(ttl))
+	return Message{cmd, key, data, expires}, nil
+}
+
 func (m Message) MarshalBinary(clock Clock) ([]byte, error) {
 	diff := m.Expires.Sub(clock.Now())
 	secs := diff.Seconds()
