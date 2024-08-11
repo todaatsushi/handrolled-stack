@@ -2,6 +2,7 @@ package server
 
 import (
 	"io"
+	"log"
 	"net"
 	"time"
 
@@ -13,17 +14,21 @@ type Server struct {
 }
 
 func (s *Server) Run(port int) error {
+	log.Println("Starting server on port ", port)
+
 	listener, err := net.ListenTCP("tcp", &net.TCPAddr{Port: port})
 	if err != nil {
 		return err
 	}
 	defer listener.Close()
+	log.Println("Listening.")
 
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
 			return err
 		}
+		log.Println("Connection made. Handling.")
 
 		go s.handle(conn)
 	}
