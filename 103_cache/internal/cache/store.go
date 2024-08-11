@@ -29,14 +29,6 @@ func (s *Store) Set(key string, value string, expires time.Time) (exp time.Time,
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	item, ok := s.store[key]
-	if ok {
-		s.ll.MoveToFront(item)
-		node := item.Value.(*Node)
-		node.Expire = expires
-		return node.Expire, nil
-	}
-
 	node := &Node{
 		key, []byte(value), expires,
 	}

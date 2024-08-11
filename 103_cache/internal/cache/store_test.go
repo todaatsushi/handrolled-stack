@@ -83,13 +83,23 @@ func TestSet(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		newExpires, err := s.Set("key", "420", clock.Future())
+		newExpires, err := s.Set("key", "421", clock.Future())
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		if newExpires.Compare(expires) != 1 {
 			t.Fatal("Expected new expires to be after old expires.")
+		}
+
+		value, err := s.Get("key")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		actual := string(value)
+		if actual != "421" {
+			t.Errorf("Expected '421', got '%s'", value)
 		}
 	})
 }
