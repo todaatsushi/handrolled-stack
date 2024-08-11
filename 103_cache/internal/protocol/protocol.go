@@ -26,7 +26,7 @@ type Message struct {
 	Expires time.Time
 }
 
-func NewMessage(cmd Command, key string, data []byte, ttl int) (Message, error) {
+func NewMessage(cmd Command, key string, data []byte, ttl int, c Clock) (Message, error) {
 	if key == "" {
 		return Message{}, errors.New("No key provided.")
 	}
@@ -47,7 +47,7 @@ func NewMessage(cmd Command, key string, data []byte, ttl int) (Message, error) 
 		return Message{}, errors.New("TTL must be greater than 2.")
 	}
 
-	expires := time.Now().Add(time.Second * time.Duration(ttl))
+	expires := c.Now().Add(time.Second * time.Duration(ttl))
 	return Message{cmd, key, data, expires}, nil
 }
 

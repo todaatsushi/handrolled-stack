@@ -44,7 +44,7 @@ func ToMessage(input string) (protocol.Message, error) {
 			return protocol.Message{}, errors.New("Invalid input, expected format: GET <key>.")
 		}
 
-		msg, err := protocol.NewMessage(command, key, []byte{}, 0)
+		msg, err := protocol.NewMessage(command, key, []byte{}, 0, c{})
 		if err != nil {
 			return protocol.Message{}, err
 		}
@@ -60,7 +60,7 @@ func ToMessage(input string) (protocol.Message, error) {
 		}
 
 		data := parts[3]
-		msg, err := protocol.NewMessage(command, key, []byte(data), ttl)
+		msg, err := protocol.NewMessage(command, key, []byte(data), ttl, c{})
 		if err != nil {
 			return protocol.Message{}, err
 		}

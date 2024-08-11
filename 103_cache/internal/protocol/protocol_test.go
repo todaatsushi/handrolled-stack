@@ -446,7 +446,7 @@ func TestMarshal(t *testing.T) {
 
 func TestNewMessage(t *testing.T) {
 	t.Run("No key", func(t *testing.T) {
-		_, err := protocol.NewMessage(protocol.Get, "", []byte{}, 1)
+		_, err := protocol.NewMessage(protocol.Get, "", []byte{}, 1, clock{})
 		if err == nil {
 			t.Fatal("Expected err, got nil.")
 		}
@@ -460,7 +460,7 @@ func TestNewMessage(t *testing.T) {
 	})
 
 	t.Run("No data for SET", func(t *testing.T) {
-		_, err := protocol.NewMessage(protocol.Set, "key", []byte{}, 10)
+		_, err := protocol.NewMessage(protocol.Set, "key", []byte{}, 10, clock{})
 		if err == nil {
 			t.Fatal("Expected err, got nil.")
 		}
@@ -474,7 +474,7 @@ func TestNewMessage(t *testing.T) {
 	})
 
 	t.Run("Data provided for GET", func(t *testing.T) {
-		_, err := protocol.NewMessage(protocol.Get, "key", []byte{1}, 1)
+		_, err := protocol.NewMessage(protocol.Get, "key", []byte{1}, 1, clock{})
 		if err == nil {
 			t.Fatal("Expected err, got nil.")
 		}
@@ -488,7 +488,7 @@ func TestNewMessage(t *testing.T) {
 	})
 
 	t.Run("TTL less than 3 for SET", func(t *testing.T) {
-		_, err := protocol.NewMessage(protocol.Set, "key", []byte{1}, 0)
+		_, err := protocol.NewMessage(protocol.Set, "key", []byte{1}, 0, clock{})
 		if err == nil {
 			t.Fatal("Expected err, got nil.")
 		}
@@ -502,7 +502,7 @@ func TestNewMessage(t *testing.T) {
 	})
 
 	t.Run("TTL provided for GET", func(t *testing.T) {
-		_, err := protocol.NewMessage(protocol.Get, "key", []byte{}, 1)
+		_, err := protocol.NewMessage(protocol.Get, "key", []byte{}, 1, clock{})
 		if err == nil {
 			t.Fatal("Expected err, got nil.")
 		}
