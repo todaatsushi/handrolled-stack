@@ -72,28 +72,24 @@ func ToMessage(input string) (protocol.Message, error) {
 
 func Dial(port int) error {
 	log.Println("Connecting client to port", port)
-
-	conn, err := net.DialTCP("tcp", nil, &net.TCPAddr{Port: port})
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	log.Println("Client connected.")
-
-	go func() {
-		// Read responses from server
-		for scanner := bufio.NewScanner(conn); scanner.Scan(); {
-			fmt.Printf("%s\n", scanner.Text())
-
-			if err := scanner.Err(); err != nil {
-				log.Fatal(err)
-			}
-		}
-	}()
-
-	// Take input from stdin & serve.
 	for scanner := bufio.NewScanner(os.Stdin); scanner.Scan(); {
+		// TODO: 1 connection, multiple messages
+		conn, err := net.DialTCP("tcp", nil, &net.TCPAddr{Port: port})
+		if err != nil {
+			return err
+		}
+
+		go func() {
+			// Read responses from server
+			for scanner := bufio.NewScanner(conn); scanner.Scan(); {
+				fmt.Printf("%s\n", scanner.Text())
+
+				if err := scanner.Err(); err != nil {
+					log.Fatal(err)
+				}
+			}
+		}()
+
 		line := scanner.Text()
 
 		msg, err := ToMessage(line)
