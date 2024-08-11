@@ -71,6 +71,7 @@ func (r *DataReader) Read() (data []byte, err error) {
 			}
 
 			message := r.buf[:lenTotal]
+			r.buf = r.buf[lenTotal:]
 			return message, nil
 		}
 
