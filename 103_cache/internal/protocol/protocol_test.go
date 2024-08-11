@@ -460,7 +460,7 @@ func TestNewMessage(t *testing.T) {
 	})
 
 	t.Run("No data for SET", func(t *testing.T) {
-		_, err := protocol.NewMessage(protocol.Set, "key", []byte{}, 1)
+		_, err := protocol.NewMessage(protocol.Set, "key", []byte{}, 10)
 		if err == nil {
 			t.Fatal("Expected err, got nil.")
 		}
@@ -487,13 +487,13 @@ func TestNewMessage(t *testing.T) {
 		}
 	})
 
-	t.Run("TTL less than 1 for SET", func(t *testing.T) {
+	t.Run("TTL less than 3 for SET", func(t *testing.T) {
 		_, err := protocol.NewMessage(protocol.Set, "key", []byte{1}, 0)
 		if err == nil {
 			t.Fatal("Expected err, got nil.")
 		}
 
-		expected := errors.New("TTL must be greater than 0.").Error()
+		expected := errors.New("TTL must be greater than 2.").Error()
 		actual := err.Error()
 
 		if actual != expected {

@@ -43,8 +43,8 @@ func NewMessage(cmd Command, key string, data []byte, ttl int) (Message, error) 
 		return Message{}, errors.New("TTL must be 0 for GET.")
 	}
 
-	if cmd == Set && ttl < 1 {
-		return Message{}, errors.New("TTL must be greater than 0.")
+	if cmd == Set && ttl <= 2 {
+		return Message{}, errors.New("TTL must be greater than 2.")
 	}
 
 	expires := time.Now().Add(time.Second * time.Duration(ttl))
