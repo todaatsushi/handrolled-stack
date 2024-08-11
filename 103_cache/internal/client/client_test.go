@@ -58,21 +58,24 @@ func TestSend(t *testing.T) {
 	})
 
 	t.Run("Invalid SET", func(t *testing.T) {
-		cases := []string{
-			"123",        // Just TTL
-			"InvalidTTL", // TTL should be int
-			"",           // No extras
+		cases := []struct {
+			args     string
+			expected string
+		}{
+			{"123", "Invalid input, expected format: SET <key> <ttl> <data>."},           // Just TTL
+			{"", "Invalid input, expected format: SET <key> <ttl> <data>."},              // Not enough args
+			{"InvalidTTL data", "Invalid input, couldn't parse 'InvalidTTL' to an int."}, // Invalid TTL
 		}
 
 		for _, tc := range cases {
-			input := fmt.Sprintf("SET key %s", tc)
+			input := fmt.Sprintf("SET key %s", tc.args)
 
 			_, err := client.ToMessage(input)
 			if err == nil {
 				t.Fatal("Expecting err, got nil.")
 			}
 
-			expected := errors.New("Invalid input, expected format: SET <key> <ttl> <data>.").Error()
+			expected := errors.New(tc.expected).Error()
 			actual := err.Error()
 
 			if actual != expected {
