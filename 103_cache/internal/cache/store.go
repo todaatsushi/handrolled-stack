@@ -21,7 +21,7 @@ type Store struct {
 	C        Clock
 }
 
-func (s *Store) Set(key string, value any, expires time.Time) (exp time.Time, err error) {
+func (s *Store) Set(key string, value string, expires time.Time) (exp time.Time, err error) {
 	if expires.Compare(s.C.Now()) == -1 {
 		return expires, errors.New("Expiry can't be in the past.")
 	}
@@ -38,7 +38,7 @@ func (s *Store) Set(key string, value any, expires time.Time) (exp time.Time, er
 	}
 
 	node := &Node{
-		key, value, expires,
+		key, []byte(value), expires,
 	}
 	s.ll.PushFront(node)
 	s.NumItems++
@@ -55,7 +55,7 @@ func (s *Store) Set(key string, value any, expires time.Time) (exp time.Time, er
 	return node.Expire, nil
 }
 
-func (s *Store) Get(key string) (value any, err error) {
+func (s *Store) Get(key string) (value []byte, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -86,6 +86,6 @@ func NewStore(maxItems uint64, c Clock) *Store {
 
 type Node struct {
 	Key    string
-	Value  any
+	Value  []byte
 	Expire time.Time
 }

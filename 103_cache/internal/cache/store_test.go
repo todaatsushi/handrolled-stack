@@ -51,7 +51,7 @@ func TestSet(t *testing.T) {
 			t.Errorf("Expected %d items, got %d", 0, s.NumItems)
 		}
 
-		_, err := s.Set("key", 420, clock.Now())
+		_, err := s.Set("key", "420", clock.Now())
 		if err != nil {
 			t.Error(err)
 		}
@@ -63,7 +63,7 @@ func TestSet(t *testing.T) {
 
 	t.Run("Past expiry", func(t *testing.T) {
 		s := cache.NewStore(1, clock)
-		_, err := s.Set("key", 420, clock.Before())
+		_, err := s.Set("key", "420", clock.Before())
 		if err == nil {
 			t.Fatal("Expected err got nil.")
 		}
@@ -78,12 +78,12 @@ func TestSet(t *testing.T) {
 
 	t.Run("Update existing value", func(t *testing.T) {
 		s := cache.NewStore(1, clock)
-		expires, err := s.Set("key", 420, clock.Now())
+		expires, err := s.Set("key", "420", clock.Now())
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		newExpires, err := s.Set("key", 420, clock.Future())
+		newExpires, err := s.Set("key", "420", clock.Future())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -96,24 +96,25 @@ func TestSet(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	t.Run("Get stored value", func(t *testing.T) {
-		expected := 420
+		expected := "420"
 		s := cache.NewStore(1, clock)
 		_, err := s.Set("key", expected, clock.Now())
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		actual, err := s.Get("key")
+		data, err := s.Get("key")
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if actual == nil {
+		if data == nil {
 			t.Fatal("Expected value, got nil")
 		}
 
+		actual := string(data)
 		if actual != expected {
-			t.Errorf("Expected %d, got %d", expected, actual)
+			t.Errorf("Expected %s, got %s", expected, actual)
 		}
 	})
 
@@ -143,7 +144,7 @@ func TestGet(t *testing.T) {
 
 		s := cache.NewStore(1, expiredClock)
 
-		_, err := s.Set("key", 420, clock.Now())
+		_, err := s.Set("key", "420", clock.Now())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -171,14 +172,14 @@ func TestCache(t *testing.T) {
 
 		// Store N values with specific TTL / expires X
 		for i := range 2 {
-			_, err = s.Set(fmt.Sprint(i), i, clock.Now())
+			_, err = s.Set(fmt.Sprint(i), fmt.Sprint(i), clock.Now())
 			if err != nil {
 				t.Fatal(err)
 			}
 		}
 
 		// Store next value
-		_, err = s.Set("2", 2, clock.Now())
+		_, err = s.Set("2", "2", clock.Now())
 		if err != nil {
 			t.Fatal(err)
 		}
