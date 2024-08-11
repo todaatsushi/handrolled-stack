@@ -14,7 +14,7 @@ type Server struct {
 }
 
 func (s *Server) Run(port int) error {
-	log.Println("Starting server on port ", port)
+	log.Println("Starting server on port", port)
 
 	listener, err := net.ListenTCP("tcp", &net.TCPAddr{Port: port})
 	if err != nil {
