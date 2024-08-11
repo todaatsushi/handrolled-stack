@@ -9,7 +9,7 @@ import (
 
 type Clock interface {
 	Now() time.Time
-	CalcExpires(ttl int) time.Time
+	Expired(t time.Time) bool
 }
 
 type Store struct {
@@ -21,25 +21,24 @@ type Store struct {
 	C        Clock
 }
 
-func (s *Store) Set(key string, value any, ttl int) (expires time.Time, err error) {
-	if ttl < 0 {
-		return time.Now(), errors.New("TTL can't be negative.")
+func (s *Store) Set(key string, value any, expires time.Time) (exp time.Time, err error) {
+	if expires.Compare(s.C.Now()) == -1 {
+		return expires, errors.New("Expiry can't be in the past.")
 	}
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	e := s.C.CalcExpires(ttl)
 	item, ok := s.store[key]
 	if ok {
 		s.ll.MoveToFront(item)
 		node := item.Value.(*Node)
-		node.Expire = e
+		node.Expire = expires
 		return node.Expire, nil
 	}
 
 	node := &Node{
-		key, value, e,
+		key, value, expires,
 	}
 	s.ll.PushFront(node)
 	s.NumItems++
@@ -66,9 +65,7 @@ func (s *Store) Get(key string) (value any, err error) {
 	}
 
 	node := item.Value.(*Node)
-	now := s.C.Now()
-
-	if node.Expire.Unix() < now.Unix() {
+	if s.C.Expired(node.Expire) {
 		return nil, errors.New("Expired.")
 	}
 

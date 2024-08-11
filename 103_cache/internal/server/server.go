@@ -43,8 +43,8 @@ func (clock c) Now() time.Time {
 	return time.Now()
 }
 
-func (clock c) CalcExpires(ttl int) time.Time {
-	return clock.Now().Add(time.Second * time.Duration(ttl))
+func (clock c) Expired(t time.Time) bool {
+	return t.Unix() < clock.Now().Unix()
 }
 
 func NewServer(cacheSize int) *Server {

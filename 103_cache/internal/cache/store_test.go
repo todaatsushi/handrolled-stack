@@ -9,7 +9,9 @@ import (
 	"github.com/todaatsushi/handrolled-cache/internal/cache"
 )
 
-type c struct{}
+type c struct {
+	expired bool
+}
 
 func (clock c) Now() time.Time {
 	t, err := time.Parse(time.RFC3339, "2069-04-20T15:00:00Z")
@@ -19,23 +21,37 @@ func (clock c) Now() time.Time {
 	return t
 }
 
-func (clock c) CalcExpires(ttl int) time.Time {
-	t, err := time.Parse(time.RFC3339, "2069-04-20T14:50:00Z")
+func (clock c) Before() time.Time {
+	t, err := time.Parse(time.RFC3339, "2069-04-20T14:00:00Z")
 	if err != nil {
 		panic(err)
 	}
-	return t.Add(time.Second * time.Duration(ttl))
+	return t
 }
+
+func (clock c) Future() time.Time {
+	t, err := time.Parse(time.RFC3339, "2069-04-20T16:00:00Z")
+	if err != nil {
+		panic(err)
+	}
+	return t
+}
+
+func (clock c) Expired(t time.Time) bool {
+	return clock.expired
+}
+
+var clock = c{false}
 
 func TestSet(t *testing.T) {
 	t.Run("Set value", func(t *testing.T) {
-		s := cache.NewStore(1, c{})
+		s := cache.NewStore(1, clock)
 
 		if s.NumItems != 0 {
 			t.Errorf("Expected %d items, got %d", 0, s.NumItems)
 		}
 
-		_, err := s.Set("key", 420, 10)
+		_, err := s.Set("key", 420, clock.Now())
 		if err != nil {
 			t.Error(err)
 		}
@@ -45,14 +61,29 @@ func TestSet(t *testing.T) {
 		}
 	})
 
+	t.Run("Past expiry", func(t *testing.T) {
+		s := cache.NewStore(1, clock)
+		_, err := s.Set("key", 420, clock.Before())
+		if err == nil {
+			t.Fatal("Expected err got nil.")
+		}
+
+		expected := errors.New("Expiry can't be in the past.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
+
 	t.Run("Update existing value", func(t *testing.T) {
-		s := cache.NewStore(1, c{})
-		expires, err := s.Set("key", 420, 0)
+		s := cache.NewStore(1, clock)
+		expires, err := s.Set("key", 420, clock.Now())
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		newExpires, err := s.Set("key", 420, 1000)
+		newExpires, err := s.Set("key", 420, clock.Future())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -61,28 +92,13 @@ func TestSet(t *testing.T) {
 			t.Fatal("Expected new expires to be after old expires.")
 		}
 	})
-
-	t.Run("Negative ttl", func(t *testing.T) {
-		s := cache.NewStore(1, c{})
-		_, err := s.Set("key", 420, -1)
-		if err == nil {
-			t.Fatal("Expecting err, got nil")
-		}
-
-		expected := errors.New("TTL can't be negative.").Error()
-		actual := err.Error()
-
-		if actual != expected {
-			t.Errorf("Expected '%s', got '%s'", expected, actual)
-		}
-	})
 }
 
 func TestGet(t *testing.T) {
 	t.Run("Get stored value", func(t *testing.T) {
 		expected := 420
-		s := cache.NewStore(1, c{})
-		_, err := s.Set("key", expected, 3600)
+		s := cache.NewStore(1, clock)
+		_, err := s.Set("key", expected, clock.Now())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -102,7 +118,7 @@ func TestGet(t *testing.T) {
 	})
 
 	t.Run("Get non stored value", func(t *testing.T) {
-		s := cache.NewStore(0, c{})
+		s := cache.NewStore(1, clock)
 
 		v, err := s.Get("nonexistent")
 
@@ -123,8 +139,11 @@ func TestGet(t *testing.T) {
 	})
 
 	t.Run("Get expired value", func(t *testing.T) {
-		s := cache.NewStore(1, c{})
-		_, err := s.Set("key", 420, 0)
+		expiredClock := c{true}
+
+		s := cache.NewStore(1, expiredClock)
+
+		_, err := s.Set("key", 420, clock.Now())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -152,14 +171,14 @@ func TestCache(t *testing.T) {
 
 		// Store N values with specific TTL / expires X
 		for i := range 2 {
-			_, err = s.Set(fmt.Sprint(i), i, 3600)
+			_, err = s.Set(fmt.Sprint(i), i, clock.Now())
 			if err != nil {
 				t.Fatal(err)
 			}
 		}
 
 		// Store next value
-		_, err = s.Set("2", 2, 3600)
+		_, err = s.Set("2", 2, clock.Now())
 		if err != nil {
 			t.Fatal(err)
 		}
