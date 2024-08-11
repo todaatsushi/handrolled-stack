@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/todaatsushi/handrolled-cache/internal/client"
+	"github.com/todaatsushi/handrolled-cache/internal/protocol"
 )
 
 func TestSend(t *testing.T) {
@@ -86,10 +88,42 @@ func TestSend(t *testing.T) {
 
 	t.Run("Test GET", func(t *testing.T) {
 		input := "GET key"
-		_, err := client.ToMessage(input)
+		actual, err := client.ToMessage(input)
 		if err != nil {
 			t.Error(err)
 		}
+
+		expected := protocol.Message{
+			Cmd:     protocol.Get,
+			Key:     "key",
+			Data:    []byte{},
+			Expires: time.Now().Add(time.Second * time.Duration(420)),
+		}
+
+		if actual.Cmd != expected.Cmd {
+			t.Errorf("Expected %d, got %d", expected.Cmd, actual.Cmd)
+		}
+
+		if actual.Key != expected.Key {
+			t.Errorf("Expected %s, got %s", expected.Key, actual.Key)
+		}
+
+		// TODO - compare properly
+		// if actual.Expires.Compare(expected.Expires) != 0 {
+		// 	t.Errorf("Expected %s, got %s", expected.Expires, actual.Expires)
+		// }
+
+		if len(actual.Data) != len(expected.Data) {
+			t.Errorf("Expecting %d, got %d", len(expected.Data), len(actual.Data))
+		}
+
+		for i, a := range actual.Data {
+			e := expected.Data[i]
+			if a != e {
+				t.Errorf("Expected %d at position %d, got %d", e, i, a)
+			}
+		}
+
 	})
 
 	t.Run("Test SET", func(t *testing.T) {
@@ -102,9 +136,40 @@ func TestSend(t *testing.T) {
 		for _, tc := range cases {
 			input := fmt.Sprintf("SET key 420 %s", tc)
 
-			_, err := client.ToMessage(input)
+			actual, err := client.ToMessage(input)
 			if err != nil {
 				t.Error(err)
+			}
+
+			expected := protocol.Message{
+				Cmd:     protocol.Set,
+				Key:     "key",
+				Data:    []byte(tc),
+				Expires: time.Now().Add(time.Second * time.Duration(420)),
+			}
+
+			if actual.Cmd != expected.Cmd {
+				t.Errorf("Expected %d, got %d", expected.Cmd, actual.Cmd)
+			}
+
+			if actual.Key != expected.Key {
+				t.Errorf("Expected %s, got %s", expected.Key, actual.Key)
+			}
+
+			// TODO - compare properly
+			// if actual.Expires.Compare(expected.Expires) != 0 {
+			// 	t.Errorf("Expected %s, got %s", expected.Expires, actual.Expires)
+			// }
+
+			if len(actual.Data) != len(expected.Data) {
+				t.Errorf("Expecting %d, got %d", len(expected.Data), len(actual.Data))
+			}
+
+			for i, a := range actual.Data {
+				e := expected.Data[i]
+				if a != e {
+					t.Errorf("Expected %d at position %d, got %d", e, i, a)
+				}
 			}
 		}
 	})
