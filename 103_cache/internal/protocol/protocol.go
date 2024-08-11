@@ -54,8 +54,11 @@ func NewMessage(cmd Command, key string, data []byte, ttl int) (Message, error) 
 func (m Message) MarshalBinary(clock Clock) ([]byte, error) {
 	diff := m.Expires.Sub(clock.Now())
 	secs := diff.Seconds()
-	if secs < 0 {
-		return []byte{}, errors.New("Negative TTL.")
+
+	if m.Cmd == Set {
+		if secs < 0 {
+			return []byte{}, errors.New("Negative TTL.")
+		}
 	}
 
 	ttl := make([]byte, 2)
