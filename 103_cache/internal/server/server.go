@@ -1,12 +1,14 @@
 package server
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net"
 	"time"
 
 	"github.com/todaatsushi/handrolled-cache/internal/cache"
+	"github.com/todaatsushi/handrolled-cache/internal/protocol"
 )
 
 type Server struct {
@@ -28,13 +30,59 @@ func (s *Server) Run(port int) error {
 		if err != nil {
 			return err
 		}
-		log.Println("Connection made. Handling.")
 
 		go s.handle(conn)
 	}
 }
 
-func (s *Server) handle(conn io.ReadWriter) {
+func respond(w io.Writer, response string) {
+	_, err := w.Write([]byte(response))
+	if err != nil {
+		log.Println(err)
+	}
+
+	// Scanner used in the client, which breaks on the newline
+	w.Write([]byte("\n"))
+}
+
+func (s *Server) handle(rw io.ReadWriter) {
+	reader := protocol.NewReader(rw)
+
+	for {
+		data, err := reader.Read()
+		if err != nil {
+			respond(rw, fmt.Sprint("Couldn't read message: ", err))
+			return
+		}
+
+		msg, err := protocol.UnmarshalBinary(data, s.store.C)
+		if err != nil {
+			respond(rw, fmt.Sprint("Couldn't unmarshal binary: ", err))
+			return
+		}
+
+		if msg.Cmd == protocol.Get {
+			value, err := s.store.Get(msg.Key)
+			if err != nil {
+				respond(rw, fmt.Sprintf("GET: Error handling key '%s': %s", msg.Key, err.Error()))
+				return
+			}
+
+			respond(rw, fmt.Sprintf("GET: %s", string(value)))
+			_, err = rw.Write(value)
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else if msg.Cmd == protocol.Set {
+			expires, err := s.store.Set(msg.Key, string(msg.Data), msg.Expires)
+			if err != nil {
+				respond(rw, fmt.Sprintf("SET: Error setting key '%s': %s", msg.Key, err.Error()))
+				return
+			}
+
+			respond(rw, fmt.Sprintf("Set '%s'. Expires: %s", msg.Key, expires))
+		}
+	}
 }
 
 type c struct{}
