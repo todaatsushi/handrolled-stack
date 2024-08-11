@@ -507,7 +507,7 @@ func TestNewMessage(t *testing.T) {
 			t.Fatal("Expected err, got nil.")
 		}
 
-		expected := errors.New("TTL must be -1 for GET.").Error()
+		expected := errors.New("TTL must be 0 for GET.").Error()
 		actual := err.Error()
 
 		if actual != expected {

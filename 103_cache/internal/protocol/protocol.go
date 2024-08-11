@@ -39,8 +39,8 @@ func NewMessage(cmd Command, key string, data []byte, ttl int) (Message, error) 
 		return Message{}, errors.New("Data provided for GET.")
 	}
 
-	if cmd == Get && ttl != -1 {
-		return Message{}, errors.New("TTL must be -1 for GET.")
+	if cmd == Get && ttl != 0 {
+		return Message{}, errors.New("TTL must be 0 for GET.")
 	}
 
 	if cmd == Set && ttl < 1 {
