@@ -3,3 +3,6 @@ build:
 
 server:
 	./bin/cache -type=server
+
+client:
+	./bin/cache -type=client
