@@ -1,13 +1,24 @@
 package client
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
+	"log"
+	"net"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/todaatsushi/handrolled-cache/internal/protocol"
 )
+
+type c struct{}
+
+func (clock c) Now() time.Time {
+	return time.Now()
+}
 
 func ToMessage(input string) (protocol.Message, error) {
 	parts := strings.SplitN(input, " ", 4)
@@ -57,4 +68,51 @@ func ToMessage(input string) (protocol.Message, error) {
 	} else {
 		panic("unreachable")
 	}
+}
+
+func Dial(port int) error {
+	log.Println("Connecting client to port", port)
+
+	conn, err := net.DialTCP("tcp", nil, &net.TCPAddr{Port: port})
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	log.Println("Client connected.")
+
+	go func() {
+		// Read responses from server
+		for scanner := bufio.NewScanner(conn); scanner.Scan(); {
+			fmt.Printf("%s\n", scanner.Text())
+
+			if err := scanner.Err(); err != nil {
+				log.Fatal(err)
+			}
+		}
+	}()
+
+	// Take input from stdin & serve.
+	for scanner := bufio.NewScanner(os.Stdin); scanner.Scan(); {
+		line := scanner.Text()
+
+		msg, err := ToMessage(line)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		data, err := msg.MarshalBinary(c{})
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		_, err = conn.Write(data)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+	}
+	return nil
 }
