@@ -26,8 +26,10 @@ func ToMessage(input string) (protocol.Message, error) {
 		return protocol.Message{}, errors.New("Invalid command: should be SET or GET.")
 	}
 
-	if command == protocol.Get && len(parts) != 2 {
-		return protocol.Message{}, errors.New("Invalid input, expected format: GET <key>.")
+	if command == protocol.Get {
+		if len(parts) != 2 {
+			return protocol.Message{}, errors.New("Invalid input, expected format: GET <key>.")
+		}
 	}
 
 	if command == protocol.Set {
