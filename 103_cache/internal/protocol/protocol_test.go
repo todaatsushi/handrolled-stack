@@ -12,7 +12,7 @@ import (
 type clock struct{}
 
 func (c clock) Now() time.Time {
-	t, _ := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z07:00")
+	t, _ := time.Parse(time.DateTime, "2069-04-20 15:00:00")
 	return t
 }
 
@@ -512,6 +512,47 @@ func TestNewMessage(t *testing.T) {
 
 		if actual != expected {
 			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
+
+	t.Run("New message", func(t *testing.T) {
+		msg, err := protocol.NewMessage(protocol.Set, "key", []byte{1}, 10, clock{})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		actual := msg.Expires
+		fakeCurrent := clock{}.Now()
+
+		expectedYear := fakeCurrent.Year()
+		expectedDay := fakeCurrent.Day()
+		expectedMonth := fakeCurrent.Month()
+		expectedHour := fakeCurrent.Hour()
+		expectedMinute := fakeCurrent.Minute()
+		expectedSecond := fakeCurrent.Second() + 10
+
+		if actual.Year() != expectedYear {
+			t.Errorf("Expected year %d, got %d", expectedYear, actual.Year())
+		}
+
+		if actual.Month() != expectedMonth {
+			t.Errorf("Expected month %d, got %d", expectedMonth, actual.Month())
+		}
+
+		if actual.Day() != expectedDay {
+			t.Errorf("Expected day %d, got %d", expectedDay, actual.Day())
+		}
+
+		if actual.Hour() != expectedHour {
+			t.Errorf("Expected hour %d, got %d", expectedHour, actual.Hour())
+		}
+
+		if actual.Minute() != expectedMinute {
+			t.Errorf("Expected minute %d, got %d", expectedMinute, actual.Minute())
+		}
+
+		if actual.Second() != expectedSecond {
+			t.Errorf("Expected second %d, got %d", expectedSecond, actual.Second())
 		}
 	})
 }
