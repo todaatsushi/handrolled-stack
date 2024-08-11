@@ -38,6 +38,38 @@ func TestUnmarshalValidation(t *testing.T) {
 		}
 	})
 
+	t.Run("No key", func(t *testing.T) {
+		ttl := make([]byte, 2)
+
+		size := make([]byte, 2)
+		binary.BigEndian.PutUint16(size, 0)
+
+		key := []byte("")
+		keyLen := make([]byte, 2)
+		binary.BigEndian.PutUint16(keyLen, uint16(len(key)))
+
+		data := []byte{
+			protocol.VERSION,
+			byte(protocol.Get),
+		}
+		data = append(data, ttl...)
+		data = append(data, keyLen...)
+		data = append(data, size...)
+		data = append(data, key...)
+
+		_, err := protocol.UnmarshalBinary(data, clock{})
+		if err == nil {
+			t.Fatal("Expected err, got nil.")
+		}
+
+		expected := errors.New("No key provided.").Error()
+		actual := err.Error()
+
+		if actual != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, actual)
+		}
+	})
+
 	t.Run("Version mismatch", func(t *testing.T) {
 		ttl := make([]byte, 2)
 

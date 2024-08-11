@@ -104,6 +104,9 @@ func UnmarshalBinary(data []byte, clock Clock) (Message, error) {
 
 	keyLenBytes := data[4:6]
 	lenKey := int(binary.BigEndian.Uint16(keyLenBytes))
+	if lenKey == 0 {
+		return Message{}, errors.New("No key provided.")
+	}
 
 	lenDataBytes := data[6:8]
 	lenData := int(binary.BigEndian.Uint16(lenDataBytes))
