@@ -114,7 +114,6 @@ func validateData(cmd Command, data []byte, ttl int) error {
 
 type Clock interface {
 	Now() time.Time
-	Add(d time.Duration) time.Time
 }
 
 func UnmarshalBinary(data []byte, clock Clock) (Message, error) {
