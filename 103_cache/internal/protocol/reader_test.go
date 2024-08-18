@@ -22,7 +22,8 @@ func newStream(data []byte) stream {
 
 func TestReader(t *testing.T) {
 	t.Run("Reads SET", func(t *testing.T) {
-		ttl := []byte{0, 1}
+		expires := make([]byte, 8)
+		expires[7] = 1
 
 		key := []byte("key")
 		keyLen := make([]byte, 2)
@@ -36,7 +37,7 @@ func TestReader(t *testing.T) {
 			protocol.VERSION,
 			byte(protocol.Set),
 		}
-		header = append(header, ttl...)
+		header = append(header, expires...)
 		header = append(header, keyLen...)
 		header = append(header, dataLen...)
 
@@ -66,7 +67,8 @@ func TestReader(t *testing.T) {
 	})
 
 	t.Run("Reads GET", func(t *testing.T) {
-		ttl := []byte{0, 1}
+		expires := make([]byte, 8)
+		expires[7] = 1
 
 		key := []byte("key")
 		keyLen := make([]byte, 2)
@@ -78,7 +80,7 @@ func TestReader(t *testing.T) {
 			protocol.VERSION,
 			byte(protocol.Get),
 		}
-		header = append(header, ttl...)
+		header = append(header, expires...)
 		header = append(header, keyLen...)
 		header = append(header, dataLen...)
 

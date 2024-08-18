@@ -7,9 +7,9 @@ import (
 	"time"
 )
 
-// Version (1B) | Command (1B) | TTL (2B) | KeyLen (2B) | Length (2B) | Key (x) | Data (x)
+// Version (1B) | Command (1B) | Expires (8B) | KeyLen (2B) | Length (2B) | Key (x) | Data (x)
 const VERSION byte = 1
-const HEADER_SIZE = 8
+const HEADER_SIZE = 14
 
 type Command byte
 
@@ -52,17 +52,17 @@ func NewMessage(cmd Command, key string, data []byte, ttl int, c Clock) (Message
 }
 
 func (m Message) MarshalBinary(clock Clock) ([]byte, error) {
-	diff := m.Expires.Sub(clock.Now())
-	secs := diff.Seconds()
+	expiresUnix := m.Expires.Unix()
+	nowUnix := clock.Now().Unix()
 
 	if m.Cmd == Set {
-		if secs < 0 {
+		if expiresUnix < nowUnix {
 			return []byte{}, errors.New("Negative TTL.")
 		}
 	}
 
-	ttl := make([]byte, 2)
-	binary.BigEndian.PutUint16(ttl, uint16(secs))
+	expires := make([]byte, 8)
+	binary.BigEndian.PutUint64(expires, uint64(expiresUnix))
 
 	keyBytes := []byte(m.Key)
 	keyLen := make([]byte, 2)
@@ -74,7 +74,7 @@ func (m Message) MarshalBinary(clock Clock) ([]byte, error) {
 	data := []byte{}
 	data = append(data, VERSION)
 	data = append(data, byte(m.Cmd))
-	data = append(data, ttl...)
+	data = append(data, expires...)
 	data = append(data, keyLen...)
 	data = append(data, dataLen...)
 	data = append(data, keyBytes...)
@@ -93,23 +93,19 @@ func parseCommand(cmd byte) (Command, error) {
 	}
 }
 
-func validateData(cmd Command, data []byte, ttl int) error {
+func validateData(cmd Command, data []byte, expires time.Time, clock Clock) error {
 	switch cmd {
 	case Get:
 		if len(data) > 0 {
 			return errors.New("Data passed to GET.")
-		}
-
-		if ttl > 0 {
-			return errors.New("TTL shouldn't be passed to GET.")
 		}
 	case Set:
 		if len(data) == 0 {
 			return errors.New("Data not passed to SET.")
 		}
 
-		if ttl == 0 {
-			return errors.New("TTL not passed to SET.")
+		if expires.Compare(clock.Now()) < 0 {
+			return errors.New("Expires in the past.")
 		}
 	}
 	return nil
@@ -129,21 +125,21 @@ func UnmarshalBinary(data []byte, clock Clock) (Message, error) {
 		return Message{}, errors.New("Version mismatch.")
 	}
 
-	keyLenBytes := data[4:6]
+	keyLenBytes := data[10:12]
 	lenKey := int(binary.BigEndian.Uint16(keyLenBytes))
 	if lenKey == 0 {
 		return Message{}, errors.New("No key provided.")
 	}
 
-	lenDataBytes := data[6:8]
+	lenDataBytes := data[12:14]
 	lenData := int(binary.BigEndian.Uint16(lenDataBytes))
 
-	keyBytes := data[8 : 8+lenKey]
+	keyBytes := data[14 : 14+lenKey]
 	key := string(keyBytes)
 
 	var toCache []byte
 	if lenData > 0 {
-		toCache = data[8+lenKey:]
+		toCache = data[14+lenKey:]
 		if lenData != len(toCache) {
 			return Message{}, errors.New("Length of data doesn't match header.")
 		}
@@ -156,11 +152,11 @@ func UnmarshalBinary(data []byte, clock Clock) (Message, error) {
 		return Message{}, err
 	}
 
-	TTLBytes := data[3:5]
-	TTL := int(binary.BigEndian.Uint16(TTLBytes))
-	expires := time.Now().Add(time.Second * time.Duration(TTL))
+	expiresBytes := data[2:10]
+	expiresUnix := int64(binary.BigEndian.Uint64(expiresBytes))
+	expires := time.Unix(expiresUnix, 0).UTC()
 
-	err = validateData(cmd, toCache, TTL)
+	err = validateData(cmd, toCache, expires, clock)
 	if err != nil {
 		return Message{}, err
 	}

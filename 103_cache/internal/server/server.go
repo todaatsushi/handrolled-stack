@@ -88,7 +88,7 @@ func (s *Server) handle(rw io.ReadWriter) {
 type c struct{}
 
 func (clock c) Now() time.Time {
-	return time.Now()
+	return time.Now().UTC()
 }
 
 func (clock c) Expired(t time.Time) bool {

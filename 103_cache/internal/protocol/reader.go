@@ -25,7 +25,7 @@ func (r *DataReader) lenData() (int, error) {
 		return -1, errors.New("Not enough data read.")
 	}
 
-	dataLenBytes := r.buf[6:8]
+	dataLenBytes := r.buf[12:14]
 	return int(binary.BigEndian.Uint16(dataLenBytes)), nil
 }
 
@@ -34,7 +34,7 @@ func (r *DataReader) lenKey() (int, error) {
 		return -1, errors.New("Not enough data read.")
 	}
 
-	keyLenBytes := r.buf[4:6]
+	keyLenBytes := r.buf[10:12]
 	return int(binary.BigEndian.Uint16(keyLenBytes)), nil
 }
 
