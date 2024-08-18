@@ -17,7 +17,7 @@ import (
 type c struct{}
 
 func (clock c) Now() time.Time {
-	return time.Now()
+	return time.Now().UTC()
 }
 
 func ToMessage(input string) (protocol.Message, error) {
