@@ -11,3 +11,7 @@ class BaseServerConfig(abc.ABC):
 @dc.dataclass
 class BasicServer(BaseServerConfig):
     pass
+
+
+# Replace with env / file config
+SERVERS = (BasicServer(host="localhost", port=5000),)
