@@ -1,0 +1,2 @@
+run-server:
+    uv run ./servers/src/servers/main.py
