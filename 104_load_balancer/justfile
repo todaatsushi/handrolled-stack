@@ -3,3 +3,6 @@ venv:
 
 server port: venv
     uv run flask --app ./servers/src/servers/main.py run --port {{port}}
+
+lb port: venv
+    uv run flask --app ./lb/src/lb/main.py run --port {{port}}
