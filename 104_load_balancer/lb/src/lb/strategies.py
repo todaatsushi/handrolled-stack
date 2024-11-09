@@ -39,3 +39,10 @@ class RoundRobin(collections.deque, Strategy[servers.BaseServerConfig]):
 STRATEGY_MAP = {
     RoundRobin.tag: RoundRobin,
 }
+
+
+def get_strategy() -> Strategy[servers.BaseServerConfig]:
+    # Replace with env var
+    strategy_env = RoundRobin.tag
+    strategy = STRATEGY_MAP[strategy_env]
+    return strategy.new(servers.SERVERS)
