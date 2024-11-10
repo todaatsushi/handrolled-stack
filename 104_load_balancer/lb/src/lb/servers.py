@@ -14,4 +14,9 @@ class BasicServer(BaseServerConfig):
 
 
 # Replace with env / file config
-SERVERS = (BasicServer(host="localhost", port=5000),)
+SERVERS = (
+    BasicServer(host="localhost", port=8000),
+    BasicServer(host="localhost", port=8001),
+    BasicServer(host="localhost", port=8002),
+    BasicServer(host="localhost", port=8003),
+)
